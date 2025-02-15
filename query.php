@@ -19,7 +19,7 @@ $columns = array_filter($columns, function($col) use ($allowed_columns) {
 $columns_sql = empty($columns) ? '*' : implode(',', $columns);
 
 // selects all members who have achieved level 5 
-$sql = "SELECT $columns_sql FROM members LIMIT :limit OFFSET 1;";
+$sql = "SELECT $columns_sql FROM members LIMIT :limit;";
 
 
 $stmt = $conn->prepare($sql);
