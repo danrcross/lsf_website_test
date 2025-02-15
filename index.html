@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Page</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+    <script src="assets/js/app.js"></script>
+    <!-- JavaScript in the /js/ folder -->
+  </head>
+  <body>
+    <h1>Admin Page</h1>
+    <h3>Featuring LSF lv 5's</h3>
+    <fieldset>
+      <legend>Columns to include</legend>
+      <label for="select-all">
+        Select all
+        <input type="checkbox" id="select-all" />
+      <label for="id">
+        ID
+        <input type="checkbox" name="id" id="cb-col-id" data-col="col-select" />
+      </label>
+      <label for="LSF_Number">
+        LSF Number
+        <input
+          type="checkbox"
+          name="LSF_Number"
+          id="cb-col-LSF_Number"
+          data-col="col-select"
+        />
+      </label>
+      <label for="First_name">
+        First name
+        <input
+          type="checkbox"
+          name="First_name"
+          id="cb-col-First_name"
+          data-col="col-select"
+        />
+      </label>
+      <label for="Last_name">
+        Last name
+        <input
+          type="checkbox"
+          name="Last_name"
+          id="cb-col-Last_name"
+          data-col="col-select"
+        />
+      </label>
+      <label for="City">
+        City
+        <input
+          type="checkbox"
+          name="City"
+          id="cb-col-City"
+          data-col="col-select"
+        />
+      </label>
+      <label for="State">
+        State
+        <input
+          type="checkbox"
+          name="State"
+          id="cb-col-State"
+          data-col="col-select"
+        />
+      </label>
+      <label for="Country">
+        Country
+        <input
+          type="checkbox"
+          name="Country"
+          id="cb-col-Country"
+          data-col="col-select"
+        />
+      </label>
+      <label for="SAPLevel1">
+        SAP Level 1
+        <input
+          type="checkbox"
+          name="SAPLevel1"
+          id="cb-col-SAPLevel1"
+          data-col="col-select"
+        />
+      </label>
+      <label for="SAPLevel2">
+        SAP Level 2
+        <input
+          type="checkbox"
+          name="SAPLevel2"
+          id="cb-col-SAPLevel2"
+          data-col="col-select"
+        />
+      </label>
+      <label for="SAPLevel3">
+        SAP Level 3
+        <input
+          type="checkbox"
+          name="SAPLevel3"
+          id="cb-col-SAPLevel3"
+          data-col="col-select"
+        />
+      </label>
+      <label for="SAPLevel4">
+        SAP Level 4
+        <input
+          type="checkbox"
+          name="SAPLevel4"
+          id="cb-col-SAPLevel4"
+          data-col="col-select"
+        />
+      </label>
+      <label for="SAPLevel5">
+        SAP Level 5
+        <input
+          type="checkbox"
+          name="SAPLevel5"
+          id="cb-col-SAPLevel5"
+          data-col="col-select"
+        />
+      </label>
+      <label for="eSAPLevel1">
+        eSAP Level 1
+        <input
+          type="checkbox"
+          name="eSAPLevel1"
+          id="cb-col-eSAPLevel1"
+          data-col="col-select"
+        />
+      </label>
+      <label for="eSAPLevel2">
+        eSAP Level 2
+        <input
+          type="checkbox"
+          name="eSAPLevel2"
+          id="cb-col-eSAPLevel2"
+          data-col="col-select"
+        />
+      </label>
+      <label for="eSAPLevel3">
+        eSAP Level 3
+        <input
+          type="checkbox"
+          name="eSAPLevel3"
+          id="cb-col-eSAPLevel3"
+          data-col="col-select"
+        />
+      </label>
+      <label for="eSAPLevel4">
+        eSAP Level 4
+        <input
+          type="checkbox"
+          name="eSAPLevel4"
+          id="cb-col-eSAPLevel4"
+          data-col="col-select"
+        />
+      </label>
+      <label for="eSAPLevel5">
+        eSAP Level 5
+        <input
+          type="checkbox"
+          name="eSAPLevel5"
+          id="cb-col-eSAPLevel5"
+          data-col="col-select"
+        />
+      </label>
+      <label for="Deceased">
+        Deceased
+        <input
+          type="checkbox"
+          name="Deceased"
+          id="cb-col-Deceased"
+          data-col="col-select"
+        />
+      </label>
+      <label for="Duplicate">
+        Duplicate
+        <input
+          type="checkbox"
+          name="Duplicate"
+          id="cb-col-Duplicate"
+          data-col="col-select"
+        />
+      </label>
+      <label for="email">
+        Email
+        <input
+          type="checkbox"
+          name="email"
+          id="cb-col-email"
+          data-col="col-select"
+        />
+      </label>
+      <label for="HighestSAPAchievement">
+        Highest SAP Achievement
+        <input
+          type="checkbox"
+          name="HighestSAPAchievement"
+          id="cb-col-HighestSAPAchievement"
+          data-col="col-select"
+        />
+      </label>
+      <label for="HighestESAPAchievement">
+        Highest eSAP Achievement
+        <input
+          type="checkbox"
+          name="HighestESAPAchievement"
+          id="cb-col-HighestESAPAchievement"
+          data-col="col-select"
+        />
+      </label>
+    </fieldset>
+    <input
+      type="number"
+      id="limitInput"
+      placeholder="Number of results"
+      value="10"
+    />
+    <!-- <select id="levelInput" name="levelInput">
+      <option value="all">All</option>
+      <option value="lv-V">Level V's ONLY</option>
+    </select> -->
+    <button id="searchBtn">Search</button>
+
+    <h2>Results:</h2>
+    <div id="results"></div>
+    <button type="button" id="prev-pg">Prev page</button>
+    <button type="button" id="next-pg">Next page</button>
+  </body>
+</html>
