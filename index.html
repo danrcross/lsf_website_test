@@ -7,6 +7,10 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
     <script src="assets/js/app.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css"
+    />
     <link rel="stylesheet" href="assets/css/app.css" />
   </head>
   <body>
@@ -262,6 +266,29 @@
               data-col="col-select"
             />
           </label>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Filter/search</legend>
+      <div id="fil-sch-ctnr" class="flex-container">
+        <div class="filt-item">
+          <label for="filt-all"
+            >Show all members
+            <input type="checkbox" id="filt-all" />
+          </label>
+        </div>
+        <div class="filt-item">
+          <label for="hi-SAP">Select highest SAP achievement level</label>
+          <select name="hi-SAP" id="filt-hi-SAP" data-filt="filt-select">
+            <option selected="selected">All</option>
+            <option>None</option>
+            <option>SAP 1</option>
+            <option>SAP 2</option>
+            <option>SAP 3</option>
+            <option>SAP 4</option>
+            <option>SAP 5</option>
+          </select>
         </div>
       </div>
     </fieldset>

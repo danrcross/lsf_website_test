@@ -7,14 +7,17 @@ $(document).ready(function () {
   let columns = [];
   var allMembers = [];
   var curPgMembers = [];
+  var filters = [];
 
   $("#select-all").on("click", function () {
     console.log("triggered");
     $('input[data-col="col-select"]').prop("checked", this.checked);
   });
+
   $("#searchBtn").click(function () {
     allMembers = [];
     columns = [];
+    filters = [];
     let limit = $("#limitInput").val();
 
     //Loop thru each checkbox and check if it is checked
@@ -24,6 +27,12 @@ $(document).ready(function () {
         columns.push($(this).attr("name"));
       }
     });
+    console.log($("#filt-hi-SAP").val());
+    // $('select[data-filt="filt-select"]').each(function () {
+    //   filters.push($(this).find(":selected").text());
+    // });
+
+    // console.log(filters);
 
     // sends a request to the server for the data
     $.ajax({
@@ -82,6 +91,7 @@ $(document).ready(function () {
   });
 
   function renderMembers(members, columns) {
+    console.log(members);
     // Initialize the output with a table and table header
     let output = "<table border='1'><thead><tr>";
 
