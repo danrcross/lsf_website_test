@@ -7,7 +7,6 @@ $(document).ready(function () {
   let columns = [];
   var allMembers = [];
   var curPgMembers = [];
-  var filters = [];
 
   $("#select-all").on("click", function () {
     console.log("triggered");
@@ -27,7 +26,17 @@ $(document).ready(function () {
         columns.push($(this).attr("name"));
       }
     });
-    console.log($("#filt-hi-SAP").val());
+
+    function getFilterValues() {
+      let filterVals = {
+        hiSAPFilt: $("#filt-hi-SAP").val(),
+        hiESAPFilt: $("#filt-hi-eSAP").val(),
+      };
+      console.log(filterVals);
+      return filterVals;
+    }
+    var filterVals = getFilterValues();
+
     // $('select[data-filt="filt-select"]').each(function () {
     //   filters.push($(this).find(":selected").text());
     // });
@@ -42,6 +51,7 @@ $(document).ready(function () {
       data: {
         limit: limit,
         columns: columns,
+        filterVals: filterVals,
       },
       dataType: "json",
       success: function (response) {
