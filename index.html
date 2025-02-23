@@ -15,7 +15,7 @@
   </head>
   <body>
     <h1>Admin Page</h1>
-    <h3>Featuring LSF lv 5's</h3>
+    <h2>Filter and search database</h2>
     <fieldset>
       <legend>Columns to include</legend>
       <div id="col-sel-ctnr" class="flex-container">
@@ -273,12 +273,6 @@
       <legend>Filter/search</legend>
       <div id="fil-sch-ctnr" class="flex-container">
         <div class="filt-item">
-          <label for="filt-all"
-            >Show all members
-            <input type="checkbox" id="filt-all" />
-          </label>
-        </div>
-        <div class="filt-item">
           <label for="hi-SAP">Select highest SAP achievement level</label>
           <select name="hi-SAP" id="filt-hi-SAP" data-filt="filt-select">
             <option selected="selected">All</option>
@@ -304,17 +298,21 @@
         </div>
       </div>
     </fieldset>
-    <input
-      type="number"
-      id="limitInput"
-      placeholder="Number of results"
-      value="10"
-    />
-    <button id="searchBtn">Search</button>
+    <div id="srch-lim-ctnr">
+      <fieldset>
+        <legend for="limitInput">Limit results to:</legend>
+        <input
+          type="number"
+          id="limitInput"
+          placeholder="Number of results"
+          value="10"
+        />
+        <button id="searchBtn">Search</button>
+      </fieldset>
+    </div>
 
     <h2>Results:</h2>
     <div id="results"></div>
-    <button type="button" id="prev-pg">Prev page</button>
-    <button type="button" id="next-pg">Next page</button>
+    <div id="pagination"></div>
   </body>
 </html>

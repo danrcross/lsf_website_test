@@ -75,31 +75,7 @@ $(document).ready(function () {
       },
     });
   });
-
-  $("#next-pg").click(function () {
-    console.log(numPgs);
-    if (curPage > 0 && curPage < numPgs) {
-      if (membersLength > 25) {
-        curPage++;
-        curPgMembers = allMembers.slice((curPage - 1) * 25, curPage * 25);
-        renderMembers(curPgMembers, columns);
-      } else {
-        console.log("No more members to display");
-      }
-    } else {
-      console.log("No more members to display");
-    }
-  });
-  $("#prev-pg").click(function () {
-    if (membersLength > 25 && curPage > 1) {
-      curPage--;
-      curPgMembers = allMembers.slice((curPage - 1) * 25, curPage * 25);
-      renderMembers(curPgMembers, columns);
-    } else {
-      console.log("No more members to display");
-    }
-  });
-
+  function renderPagination(pgNum) {}
   function renderMembers(members, columns) {
     console.log(members);
     // Initialize the output with a table and table header
@@ -161,5 +137,45 @@ $(document).ready(function () {
 
     // Insert the generated output into the results container
     $("#results").html(output);
+    if (membersLength > 25) {
+      $("#pagination").html(
+        `<button id="prev-pg">Previous</button> <span id="cur-pg-slct"></span> <button id="next-pg">Next</button>`
+      );
+      $("#cur-pg-slct").html(`<select id="pg-dd"></select>`);
+      for (let i = 1; i <= numPgs; i++) {
+        $("#pg-dd").append(`<option value="${i}">${i}</option>`);
+      }
+    }
+    $("#next-pg").click(function () {
+      console.log(numPgs);
+      if (curPage > 0 && curPage < numPgs) {
+        if (membersLength > 25) {
+          curPage++;
+          curPgMembers = allMembers.slice((curPage - 1) * 25, curPage * 25);
+          renderMembers(curPgMembers, columns);
+          $("#pg-dd").val(curPage);
+        } else {
+          console.log("No more members to display");
+        }
+      } else {
+        console.log("No more members to display");
+      }
+    });
+    $("#prev-pg").click(function () {
+      if (membersLength > 25 && curPage > 1) {
+        curPage--;
+        curPgMembers = allMembers.slice((curPage - 1) * 25, curPage * 25);
+        renderMembers(curPgMembers, columns);
+        $("#pg-dd").val(curPage);
+      } else {
+        console.log("No more members to display");
+      }
+    });
+    $("#pg-dd").change(function () {
+      curPage = parseInt($(this).val());
+      curPgMembers = allMembers.slice((curPage - 1) * 25, curPage * 25);
+      renderMembers(curPgMembers, columns);
+      $("#pg-dd").val(curPage);
+    });
   }
 });
