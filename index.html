@@ -15,16 +15,17 @@
   </head>
   <body>
     <h1>Admin Page</h1>
-    <h2>Filter and search database</h2>
+    <h2>Filter and Search Database</h2>
     <fieldset>
       <legend>Columns to include</legend>
       <div id="col-sel-ctnr" class="flex-container">
         <div class="checkbox-item">
-          <label for="select-all"
-            >Select all
+          <label for="select-all">
+            Select all
             <input type="checkbox" id="select-all" />
           </label>
         </div>
+        <!-- Updated checkbox list -->
         <div class="checkbox-item">
           <label for="id"
             >ID
@@ -48,23 +49,34 @@
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="First_name"
-            >First name
+          <label for="First_Name"
+            >First Name
             <input
               type="checkbox"
-              name="First_name"
-              id="cb-col-First_name"
+              name="First_Name"
+              id="cb-col-First_Name"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="Last_name"
-            >Last name
+          <label for="Last_Name"
+            >Last Name
             <input
               type="checkbox"
-              name="Last_name"
-              id="cb-col-Last_name"
+              name="Last_Name"
+              id="cb-col-Last_Name"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="Address"
+            >Address
+            <input
+              type="checkbox"
+              name="Address"
+              id="cb-col-Address"
               data-col="col-select"
             />
           </label>
@@ -92,6 +104,17 @@
           </label>
         </div>
         <div class="checkbox-item">
+          <label for="Zip"
+            >Zip
+            <input
+              type="checkbox"
+              name="Zip"
+              id="cb-col-Zip"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
           <label for="Country"
             >Country
             <input
@@ -103,111 +126,210 @@
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="SAPLevel1"
+          <label for="Country_Coordinator"
+            >Country Coordinator
+            <input
+              type="checkbox"
+              name="Country_Coordinator"
+              id="cb-col-Country_Coordinator"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="email"
+            >Email
+            <input
+              type="checkbox"
+              name="email"
+              id="cb-col-email"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="Last_Contact"
+            >Last Contact
+            <input
+              type="checkbox"
+              name="Last_Contact"
+              id="cb-col-Last_Contact"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="AMA_Number"
+            >AMA Number
+            <input
+              type="checkbox"
+              name="AMA_Number"
+              id="cb-col-AMA_Number"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="SAP_Aspirant"
+            >SAP Aspirant
+            <input
+              type="checkbox"
+              name="SAP_Aspirant"
+              id="cb-col-SAP_Aspirant"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="SAP_Level_1"
             >SAP Level 1
             <input
               type="checkbox"
-              name="SAPLevel1"
-              id="cb-col-SAPLevel1"
+              name="SAP_Level_1"
+              id="cb-col-SAP_Level_1"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="SAPLevel2"
+          <label for="SAP_Level_2"
             >SAP Level 2
             <input
               type="checkbox"
-              name="SAPLevel2"
-              id="cb-col-SAPLevel2"
+              name="SAP_Level_2"
+              id="cb-col-SAP_Level_2"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="SAPLevel3"
+          <label for="SAP_Level_3"
             >SAP Level 3
             <input
               type="checkbox"
-              name="SAPLevel3"
-              id="cb-col-SAPLevel3"
+              name="SAP_Level_3"
+              id="cb-col-SAP_Level_3"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="SAPLevel4"
+          <label for="SAP_Level_4"
             >SAP Level 4
             <input
               type="checkbox"
-              name="SAPLevel4"
-              id="cb-col-SAPLevel4"
+              name="SAP_Level_4"
+              id="cb-col-SAP_Level_4"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="SAPLevel5"
+          <label for="SAP_Level_5"
             >SAP Level 5
             <input
               type="checkbox"
-              name="SAPLevel5"
-              id="cb-col-SAPLevel5"
+              name="SAP_Level_5"
+              id="cb-col-SAP_Level_5"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="eSAPLevel1"
+          <label for="eSAP_Aspirant"
+            >eSAP Aspirant
+            <input
+              type="checkbox"
+              name="eSAP_Aspirant"
+              id="cb-col-eSAP_Aspirant"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="eSAP_Level_1"
             >eSAP Level 1
             <input
               type="checkbox"
-              name="eSAPLevel1"
-              id="cb-col-eSAPLevel1"
+              name="eSAP_Level_1"
+              id="cb-col-eSAP_Level_1"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="eSAPLevel2"
+          <label for="eSAP_Level_2"
             >eSAP Level 2
             <input
               type="checkbox"
-              name="eSAPLevel2"
-              id="cb-col-eSAPLevel2"
+              name="eSAP_Level_2"
+              id="cb-col-eSAP_Level_2"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="eSAPLevel3"
+          <label for="eSAP_Level_3"
             >eSAP Level 3
             <input
               type="checkbox"
-              name="eSAPLevel3"
-              id="cb-col-eSAPLevel3"
+              name="eSAP_Level_3"
+              id="cb-col-eSAP_Level_3"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="eSAPLevel4"
+          <label for="eSAP_Level_4"
             >eSAP Level 4
             <input
               type="checkbox"
-              name="eSAPLevel4"
-              id="cb-col-eSAPLevel4"
+              name="eSAP_Level_4"
+              id="cb-col-eSAP_Level_4"
               data-col="col-select"
             />
           </label>
         </div>
         <div class="checkbox-item">
-          <label for="eSAPLevel5"
+          <label for="eSAP_Level_5"
             >eSAP Level 5
             <input
               type="checkbox"
-              name="eSAPLevel5"
-              id="cb-col-eSAPLevel5"
+              name="eSAP_Level_5"
+              id="cb-col-eSAP_Level_5"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="SAP_Highest"
+            >Highest SAP Achievement
+            <input
+              type="checkbox"
+              name="SAP_Highest"
+              id="cb-col-SAP_Highest"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="eSAP_Highest"
+            >Highest eSAP Achievement
+            <input
+              type="checkbox"
+              name="eSAP_Highest"
+              id="cb-col-eSAP_Highest"
+              data-col="col-select"
+            />
+          </label>
+        </div>
+        <div class="checkbox-item">
+          <label for="Miscellaneous"
+            >Miscellaneous
+            <input
+              type="checkbox"
+              name="Miscellaneous"
+              id="cb-col-Miscellaneous"
               data-col="col-select"
             />
           </label>
@@ -234,54 +356,21 @@
             />
           </label>
         </div>
-        <div class="checkbox-item">
-          <label for="email"
-            >Email
-            <input
-              type="checkbox"
-              name="email"
-              id="cb-col-email"
-              data-col="col-select"
-            />
-          </label>
-        </div>
-        <div class="checkbox-item">
-          <label for="HighestSAPAchievement"
-            >Highest SAP Achievement
-            <input
-              type="checkbox"
-              name="HighestSAPAchievement"
-              id="cb-col-HighestSAPAchievement"
-              data-col="col-select"
-            />
-          </label>
-        </div>
-        <div class="checkbox-item">
-          <label for="HighestESAPAchievement"
-            >Highest eSAP Achievement
-            <input
-              type="checkbox"
-              name="HighestESAPAchievement"
-              id="cb-col-HighestESAPAchievement"
-              data-col="col-select"
-            />
-          </label>
-        </div>
       </div>
     </fieldset>
     <fieldset>
-      <legend>Filter/search</legend>
+      <legend>Filter/Search</legend>
       <div id="fil-sch-ctnr" class="flex-container">
         <div class="filt-item">
           <label for="hi-SAP">Select highest SAP achievement level</label>
           <select name="hi-SAP" id="filt-hi-SAP" data-filt="filt-select">
             <option selected="selected">All</option>
             <option>None</option>
-            <option>SAP 1</option>
-            <option>SAP 2</option>
-            <option>SAP 3</option>
-            <option>SAP 4</option>
-            <option>SAP 5</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
           </select>
         </div>
         <div class="filt-item">
@@ -289,11 +378,11 @@
           <select name="hi-eSAP" id="filt-hi-eSAP" data-filt="filt-select">
             <option selected="selected">All</option>
             <option>None</option>
-            <option>eSAP 1</option>
-            <option>eSAP 2</option>
-            <option>eSAP 3</option>
-            <option>eSAP 4</option>
-            <option>eSAP 5</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
           </select>
         </div>
       </div>

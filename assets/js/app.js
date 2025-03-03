@@ -19,9 +19,8 @@ $(document).ready(function () {
     filters = [];
     let limit = $("#limitInput").val();
 
-    //Loop thru each checkbox and check if it is checked
+    // Loop through each checkbox and, if checked, push the "name" attribute to the columns array
     $('input[data-col="col-select"]').each(function () {
-      // for each checkbox checked, push the "name" attribute to the 'columns' array
       if ($(this).is(":checked")) {
         columns.push($(this).attr("name"));
       }
@@ -37,17 +36,10 @@ $(document).ready(function () {
     }
     var filterVals = getFilterValues();
 
-    // $('select[data-filt="filt-select"]').each(function () {
-    //   filters.push($(this).find(":selected").text());
-    // });
-
-    // console.log(filters);
-
-    // sends a request to the server for the data
+    // Send a request to the server for the data
     $.ajax({
       url: "query.php",
       type: "POST",
-      // sends the limit value to the server
       data: {
         limit: limit,
         columns: columns,
@@ -55,7 +47,6 @@ $(document).ready(function () {
       },
       dataType: "json",
       success: function (response) {
-        // if the server responds with success, render the data
         if (response.status === "success" && response.members.length > 0) {
           membersLength = response.members.length;
           curPage = 1;
@@ -64,7 +55,6 @@ $(document).ready(function () {
           allMembers = response.members;
           curPgMembers = allMembers.slice(0, 25);
           curLimit = limit;
-          // calls the renderMembers function to render the data
           renderMembers(curPgMembers, columns);
         } else {
           $("#results").html("<p>Error: " + response.message + "</p>");
@@ -75,36 +65,49 @@ $(document).ready(function () {
       },
     });
   });
-  function renderPagination(pgNum) {}
+
+  function renderPagination(pgNum) {
+    // (Pagination rendering can be added here if needed)
+  }
+
   function renderMembers(members, columns) {
     console.log(members);
     // Initialize the output with a table and table header
     let output = "<table border='1'><thead><tr>";
 
+    // If no columns were selected, use the default column list based on your new schema
     if (columns.length === 0) {
       columns = [
         "id",
         "LSF_Number",
-        "First_name",
-        "Last_name",
+        "First_Name",
+        "Last_Name",
+        "Address",
         "City",
         "State",
+        "Zip",
         "Country",
-        "SAPLevel1",
-        "SAPLevel2",
-        "SAPLevel3",
-        "SAPLevel4",
-        "SAPLevel5",
-        "eSAPLevel1",
-        "eSAPLevel2",
-        "eSAPLevel3",
-        "eSAPLevel4",
-        "eSAPLevel5",
+        "Country_Coordinator",
+        "email",
+        "Last_Contact",
+        "AMA_Number",
+        "SAP_Aspirant",
+        "SAP_Level_1",
+        "SAP_Level_2",
+        "SAP_Level_3",
+        "SAP_Level_4",
+        "SAP_Level_5",
+        "eSAP_Aspirant",
+        "eSAP_Level_1",
+        "eSAP_Level_2",
+        "eSAP_Level_3",
+        "eSAP_Level_4",
+        "eSAP_Level_5",
+        "SAP_Level", // computed column (updated name)
+        "eSAP_Level", // computed column (updated name)
+        "Miscellaneous",
         "Deceased",
         "Duplicate",
-        "email",
-        "HighestSAPAchievement",
-        "HighestESAPAchievement",
       ];
     }
 
@@ -112,31 +115,28 @@ $(document).ready(function () {
     columns.forEach((column) => {
       output += `<th>${column}</th>`;
     });
-
     output += "</tr></thead><tbody>";
 
     // Loop through each member and create a table row
     members.forEach((member) => {
       output += "<tr>";
-
       // Loop through the selected columns and dynamically append their values
       columns.forEach((column) => {
-        // Check if the column exists in the member object and append it to the table cell
+        // Append the cell value or an empty cell if the property is missing
         if (member[column]) {
           output += `<td>${member[column]}</td>`;
         } else {
-          output += "<td></td>"; // If no value, add an empty cell
+          output += "<td></td>";
         }
       });
-
       output += "</tr>";
     });
 
-    // Close the table and tbody
     output += "</tbody></table>";
 
     // Insert the generated output into the results container
     $("#results").html(output);
+
     if (membersLength > 25) {
       $("#pagination").html(
         `<button id="prev-pg">Previous</button> <span id="cur-pg-slct"></span> <button id="next-pg">Next</button>`
@@ -146,6 +146,7 @@ $(document).ready(function () {
         $("#pg-dd").append(`<option value="${i}">${i}</option>`);
       }
     }
+
     $("#next-pg").click(function () {
       console.log(numPgs);
       if (curPage > 0 && curPage < numPgs) {
@@ -161,6 +162,7 @@ $(document).ready(function () {
         console.log("No more members to display");
       }
     });
+
     $("#prev-pg").click(function () {
       if (membersLength > 25 && curPage > 1) {
         curPage--;
@@ -171,6 +173,7 @@ $(document).ready(function () {
         console.log("No more members to display");
       }
     });
+
     $("#pg-dd").change(function () {
       curPage = parseInt($(this).val());
       curPgMembers = allMembers.slice((curPage - 1) * 25, curPage * 25);
