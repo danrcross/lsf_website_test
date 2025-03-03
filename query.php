@@ -32,11 +32,11 @@ $allowed_columns = [
     'eSAP_Level_3',
     'eSAP_Level_4',
     'eSAP_Level_5',
-    'SAP_Highest',
-    'eSAP_Highest',
+    'SAP_Level',
+    'eSAP_Level',
     'Miscellaneous',
-    'Deceased (1/0)',
-    'Duplicate (1/0)'
+    'Deceased',
+    'Duplicate'
 ];
 
 // Filter values are already an array, no need for json_decode

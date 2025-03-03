@@ -29,7 +29,7 @@ CREATE TABLE members (
     eSAP_Level_4 DATE,
     eSAP_Level_5 DATE,
     -- Computed column for highest SAP level achieved (1-5)
-    SAP_Highest INT AS (
+    SAP_Level INT AS (
         GREATEST(
             IF(SAP_Level_1 IS NOT NULL, 1, 0),
             IF(SAP_Level_2 IS NOT NULL, 2, 0),
@@ -39,7 +39,7 @@ CREATE TABLE members (
         )
     ) STORED,
     -- Computed column for highest eSAP level achieved (1-5)
-    eSAP_Highest INT AS (
+    eSAP_Level INT AS (
         GREATEST(
             IF(eSAP_Level_1 IS NOT NULL, 1, 0),
             IF(eSAP_Level_2 IS NOT NULL, 2, 0),
@@ -49,8 +49,8 @@ CREATE TABLE members (
         )
     ) STORED,
     Miscellaneous VARCHAR(255),
-    `Deceased (1/0)` TINYINT(1),
-    `Duplicate (1/0)` TINYINT(1),
+    Deceased TINYINT(1),
+    Duplicate TINYINT(1),
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -97,8 +97,8 @@ IGNORE 1 ROWS
     @dummy_SAP_Level,   -- Ignored: CSV column for SAP_Level
     @dummy_eSAP_Level,  -- Ignored: CSV column for eSAP_Level
     Miscellaneous,
-    `Deceased (1/0)`,
-    `Duplicate (1/0)`
+    Deceased,
+    Duplicate
 )
 SET 
     Last_Contact   = IF(@Last_Contact = '', NULL, STR_TO_DATE(@Last_Contact, '%m/%d/%Y')),
