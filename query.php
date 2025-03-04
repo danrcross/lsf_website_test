@@ -42,9 +42,6 @@ $allowed_columns = [
 // Filter values are already an array, no need for json_decode
 $filter_values = $_POST['filterVals'] ?? null;
 
-// Debugging the filter values
-error_log("Filter Values: " . print_r($filter_values, true));
-
 // List of allowed column names
 $columns = (count($_POST['columns'] ?? []) === 0) ? ['*'] : $_POST['columns'];
 
@@ -65,6 +62,39 @@ if (!empty($filter_values) && is_array($filter_values)) {
     foreach ($filter_values as $key => $value) {
         if ($value !== "All" && $value !== null) {  // Skip filters with value 'All' or null
             switch ($key) {
+                
+                case 'SAPAspFilt':
+                    // Use new computed column SAP_Aspirant for filtering
+                    if ($value === "Yes") {
+                        $sql .= " AND SAP_Aspirant IS NOT NULL";
+                    } if ($value === "No") {
+                        $sql .= " AND SAP_Aspirant IS NULL";
+                    } 
+                    break;
+                case 'eSAPAspFilt':
+                    // Use new computed column eSAP_Aspirant for filtering
+                    if ($value === "Yes") {
+                        $sql .= " AND eSAP_Aspirant IS NOT NULL";
+                    } if ($value === "No") {
+                        $sql .= " AND eSAP_Aspirant IS NULL";
+                    } 
+                    break;
+                case 'deceasedFilt':
+                    // Use new computed column Deceased for filtering
+                    if ($value === "Yes") {
+                        $sql .= " AND Deceased IS NOT NULL";
+                    } if ($value === "No") {
+                        $sql .= " AND Deceased IS NULL";
+                    } 
+                    break;
+                case 'dupFilt':
+                    // Use new computed column Duplicate for filtering
+                    if ($value === "Yes") {
+                        $sql .= " AND Duplicate IS NOT NULL";
+                    } if ($value === "No") {
+                        $sql .= " AND Duplicate IS NULL";
+                    } 
+                    break;
                 case 'hiSAPFilt':
                     // Use new computed column SAP_Level for filtering
                     if ($value === "None") {
@@ -82,22 +112,6 @@ if (!empty($filter_values) && is_array($filter_values)) {
                         $sql .= " AND eSAP_Level = :hiESAPFilt";
                         $params[':hiESAPFilt'] = $value;
                     }
-                    break;
-                case 'SAPAspFilt':
-                    // Use new computed column SAP_Aspirant for filtering
-                    if ($value === "Yes") {
-                        $sql .= " AND SAP_Aspirant IS NOT NULL";
-                    } if ($value === "No") {
-                        $sql .= " AND SAP_Aspirant IS NULL";
-                    } 
-                    break;
-                case 'eSAPAspFilt':
-                    // Use new computed column eSAP_Aspirant for filtering
-                    if ($value === "Yes") {
-                        $sql .= " AND eSAP_Aspirant IS NOT NULL";
-                    } if ($value === "No") {
-                        $sql .= " AND eSAP_Aspirant IS NULL";
-                    } 
                     break;
                
                 // Add additional cases for other filters if needed.
