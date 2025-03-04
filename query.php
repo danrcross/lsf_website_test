@@ -63,7 +63,7 @@ $params = [];
 // Loop through the filters and append them to the SQL query
 if (!empty($filter_values) && is_array($filter_values)) {
     foreach ($filter_values as $key => $value) {
-        if ($value !== "All" && $value !== null) {  // Skip 'All' values
+        if ($value !== "All" && $value !== null) {  // Skip filters with value 'All' or null
             switch ($key) {
                 case 'hiSAPFilt':
                     // Use new computed column SAP_Level for filtering
@@ -83,6 +83,23 @@ if (!empty($filter_values) && is_array($filter_values)) {
                         $params[':hiESAPFilt'] = $value;
                     }
                     break;
+                case 'SAPAspFilt':
+                    // Use new computed column SAP_Aspirant for filtering
+                    if ($value === "Yes") {
+                        $sql .= " AND SAP_Aspirant IS NOT NULL";
+                    } if ($value === "No") {
+                        $sql .= " AND SAP_Aspirant IS NULL";
+                    } 
+                    break;
+                case 'eSAPAspFilt':
+                    // Use new computed column eSAP_Aspirant for filtering
+                    if ($value === "Yes") {
+                        $sql .= " AND eSAP_Aspirant IS NOT NULL";
+                    } if ($value === "No") {
+                        $sql .= " AND eSAP_Aspirant IS NULL";
+                    } 
+                    break;
+               
                 // Add additional cases for other filters if needed.
             }
         }
@@ -108,5 +125,10 @@ $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Return the results as a JSON response
-echo json_encode(["status" => "success", "members" => $results]);
+echo json_encode([
+    "status" => "success",
+    "query" => $sql,
+    "parameters" => $params,
+    "members" => $results
+]);
 ?>

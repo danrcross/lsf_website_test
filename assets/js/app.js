@@ -13,6 +13,15 @@ $(document).ready(function () {
     $('input[data-col="col-select"]').prop("checked", this.checked);
   });
 
+  // Checkbox functionality for AMA search
+  // $("#noAMANumber").change(function () {
+  //   if (this.checked) {
+  //     $("#AMASearchInput").addClass("hidden"); // Hide search bar
+  //   } else {
+  //     $("#AMASearchInput").removeClass("hidden"); // Show search bar
+  //   }
+  // });
+
   $("#searchBtn").click(function () {
     allMembers = [];
     columns = [];
@@ -28,8 +37,13 @@ $(document).ready(function () {
 
     function getFilterValues() {
       let filterVals = {
+        SAPAspFilt: $("#filt-SAP-Asp").val(),
+        eSAPAspFilt: $("#filt-eSAP-Asp").val(),
+        deceasedFilt: $("#filt-Deceased").val(),
+        dupFilt: $("#filt-Duplicate").val(),
         hiSAPFilt: $("#filt-hi-SAP").val(),
         hiESAPFilt: $("#filt-hi-eSAP").val(),
+        // AMANumFilt: $("#filt-AMA-Num").val(),
       };
       console.log(filterVals);
       return filterVals;
