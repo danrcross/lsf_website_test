@@ -1,4 +1,108 @@
 $(document).ready(function () {
+  // Function to get the columns from the database and create checkboxes dynamically
+  $.ajax({
+    url: "queries/render_columns.php",
+    type: "GET",
+    dataType: "json",
+    success: function (response) {
+      if (response.status === "success") {
+        let columns = response.columns;
+        let container = $("#col-sel-ctnr"); // Container for checkboxes
+
+        // Clear existing checkboxes
+        container.empty();
+
+        // Create "Select All" checkbox
+        container.append(`
+                    <div class="checkbox-item">
+                        <label for="select-all">
+                            Select all
+                            <input type="checkbox" id="select-all" />
+                        </label>
+                    </div>
+                `);
+
+        // Loop through columns and create checkboxes dynamically
+        columns.forEach((column) => {
+          let checkboxHTML = `
+                        <div class="checkbox-item">
+                            <label for="${column}">
+                                ${column.replace(
+                                  /_/g,
+                                  " "
+                                )} <!-- Format column names -->
+                                <input type="checkbox" name="${column}" id="cb-col-${column}" data-col="col-select" />
+                            </label>
+                        </div>
+                    `;
+          container.append(checkboxHTML);
+        });
+
+        // "Select All" functionality
+        $("#select-all").change(function () {
+          $("input[data-col='col-select']").prop("checked", this.checked);
+        });
+      } else {
+        console.error("Error fetching columns:", response.message);
+      }
+    },
+    error: function (xhr, status, error) {
+      console.error("AJAX error:", error);
+    },
+  });
+
+  // Function to get the filter options from the database and create select dropdowns dynamically
+  $.ajax({
+    url: "queries/get_filter_options.php", // Ensure this is the correct path to your PHP script
+    type: "GET",
+    dataType: "json",
+    success: function (response) {
+      if (response.status === "success") {
+        let filterOptions = response.filterOptions;
+        let filterContainer = $("#fil-sch-ctnr"); // Get the container for filters
+
+        // Clear existing filters before appending new ones
+        filterContainer.empty();
+
+        // Define filter names and their labels for user-friendly display
+        let filterLabels = {
+          SAPAspFilt: "Select SAP aspirant status",
+          eSAPAspFilt: "Select eSAP aspirant status",
+          deceasedFilt: "Select deceased status",
+          dupFilt: "Select duplicate status",
+          hiSAPFilt: "Select highest SAP achievement level",
+          hiESAPFilt: "Select highest eSAP achievement level",
+        };
+
+        // Loop through each filter and dynamically create its select dropdown
+        Object.keys(filterOptions).forEach((filterKey) => {
+          let optionsHtml = filterOptions[filterKey]
+            .map((value) => `<option value="${value}">${value}</option>`)
+            .join(""); // Convert array to string of <option> elements
+
+          // Create the filter dropdown dynamically
+          let filterHtml = `
+                        <div class="filt-item">
+                            <label for="${filterKey}">${filterLabels[filterKey]}</label>
+                            <select name="${filterKey}" id="filt-${filterKey}" data-filt="filt-select">
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                    `;
+
+          // Append the filter dropdown to the container
+          filterContainer.append(filterHtml);
+        });
+      } else {
+        console.error("Error fetching filter options:", response.message);
+      }
+    },
+    error: function (xhr, status, error) {
+      console.error("AJAX error:", error);
+      console.log("Server Response:", xhr.responseText);
+    },
+  });
+
   // stores the current limit value (for pagination, from local storage??)
   var curLimit = null;
   var curPage = 1;
@@ -37,18 +141,24 @@ $(document).ready(function () {
 
     function getFilterValues() {
       let filterVals = {
-        SAPAspFilt: $("#filt-SAP-Asp").val(),
-        eSAPAspFilt: $("#filt-eSAP-Asp").val(),
-        deceasedFilt: $("#filt-Deceased").val(),
-        dupFilt: $("#filt-Duplicate").val(),
-        hiSAPFilt: $("#filt-hi-SAP").val(),
-        hiESAPFilt: $("#filt-hi-eSAP").val(),
-        // AMANumFilt: $("#filt-AMA-Num").val(),
+        SAPAspFilt: $("#filt-SAPAspFilt").val(),
+        eSAPAspFilt: $("#filt-eSAPAspFilt").val(),
+        deceasedFilt: $("#filt-deceasedFilt").val(),
+        dupFilt: $("#filt-dupFilt").val(),
+        hiSAPFilt: $("#filt-hiSAPFilt").val(),
+        hiESAPFilt: $("#filt-hiESAPFilt").val(),
       };
       console.log(filterVals);
       return filterVals;
     }
     var filterVals = getFilterValues();
+
+    //logging for debugging
+    console.log("Sending to query.php:", {
+      limit: limit,
+      columns: columns,
+      filterVals: filterVals,
+    });
 
     // Send a request to the server for the data
     $.ajax({

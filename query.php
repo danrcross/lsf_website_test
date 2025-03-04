@@ -1,11 +1,14 @@
 <?php
+// Set the content type to JSON for proper API response format
 header("Content-Type: application/json");
-require_once "includes/config.php"; // Secure DB connection
 
-// Number of rows to return (default 10)
+// Include the database configuration file to establish a secure DB connection
+require_once "includes/config.php"; 
+
+// Get the number of rows to return, defaulting to 10 if not provided
 $limit = $_POST['limit'] ?? 10;
 
-// Updated allowed columns array based on the new table structure
+// Define a list of allowed column names to prevent SQL injection or invalid queries
 $allowed_columns = [
     'id',
     'LSF_Number',
@@ -39,73 +42,78 @@ $allowed_columns = [
     'Duplicate'
 ];
 
-// Filter values are already an array, no need for json_decode
+// Retrieve filter values from the request (filters are expected to be in an array format)
 $filter_values = $_POST['filterVals'] ?? null;
 
-// List of allowed column names
+// Retrieve requested columns; if empty, default to selecting all columns
 $columns = (count($_POST['columns'] ?? []) === 0) ? ['*'] : $_POST['columns'];
 
-// Validate/Filter columns (make sure they are allowed)
+// Validate the requested columns against the allowed list
 $columns = array_filter($columns, function($col) use ($allowed_columns) {
     return in_array($col, $allowed_columns);
 });
 
-// If no valid columns are provided, default to all columns
+// If no valid columns are provided, default to selecting all columns
 $columns_sql = empty($columns) ? '*' : implode(',', $columns);
 
-// Base SQL query; adjust table name if needed (here assuming table name is "members")
+// Initialize base SQL query (assuming table name is "members")
 $sql = "SELECT $columns_sql FROM members WHERE 1=1";
 $params = [];
 
-// Loop through the filters and append them to the SQL query
+// Apply filters if provided
 if (!empty($filter_values) && is_array($filter_values)) {
     foreach ($filter_values as $key => $value) {
-        if ($value !== "All" && $value !== null) {  // Skip filters with value 'All' or null
+        // Skip filters that are 'All' or NULL (meaning no filter is applied for that field)
+        if ($value !== "All" && $value !== null) {  
             switch ($key) {
-                
-                case 'SAPAspFilt':
-                    // Use new computed column SAP_Aspirant for filtering
+                case 'SAPAspFilt': 
+                    // Filter based on SAP_Aspirant column (checking for NULL or NOT NULL values)
                     if ($value === "Yes") {
                         $sql .= " AND SAP_Aspirant IS NOT NULL";
-                    } if ($value === "No") {
+                    } elseif ($value === "No") {
                         $sql .= " AND SAP_Aspirant IS NULL";
                     } 
                     break;
-                case 'eSAPAspFilt':
-                    // Use new computed column eSAP_Aspirant for filtering
+                
+                case 'eSAPAspFilt': 
+                    // Filter based on eSAP_Aspirant column
                     if ($value === "Yes") {
                         $sql .= " AND eSAP_Aspirant IS NOT NULL";
-                    } if ($value === "No") {
+                    } elseif ($value === "No") {
                         $sql .= " AND eSAP_Aspirant IS NULL";
                     } 
                     break;
-                case 'deceasedFilt':
-                    // Use new computed column Deceased for filtering
+                
+                case 'deceasedFilt': 
+                    // Filter members who are marked as deceased
                     if ($value === "Yes") {
                         $sql .= " AND Deceased IS NOT NULL";
-                    } if ($value === "No") {
+                    } elseif ($value === "No") {
                         $sql .= " AND Deceased IS NULL";
                     } 
                     break;
-                case 'dupFilt':
-                    // Use new computed column Duplicate for filtering
+                
+                case 'dupFilt': 
+                    // Filter members who are marked as duplicates
                     if ($value === "Yes") {
                         $sql .= " AND Duplicate IS NOT NULL";
-                    } if ($value === "No") {
+                    } elseif ($value === "No") {
                         $sql .= " AND Duplicate IS NULL";
                     } 
                     break;
-                case 'hiSAPFilt':
-                    // Use new computed column SAP_Level for filtering
+                
+                case 'hiSAPFilt': 
+                    // Filter by the highest SAP level (NULL means no level assigned)
                     if ($value === "None") {
                         $sql .= " AND SAP_Level IS NULL";
                     } else {
                         $sql .= " AND SAP_Level = :hiSAPFilt";
-                        $params[':hiSAPFilt'] = $value;
+                        $params[':hiSAPFilt'] = $value; // Store parameter for prepared statement
                     }
                     break;
-                case 'hiESAPFilt':
-                    // Use new computed column eSAP_Level for filtering
+                
+                case 'hiESAPFilt': 
+                    // Filter by the highest eSAP level (NULL means no level assigned)
                     if ($value === "None") {
                         $sql .= " AND eSAP_Level IS NULL";
                     } else {
@@ -113,36 +121,35 @@ if (!empty($filter_values) && is_array($filter_values)) {
                         $params[':hiESAPFilt'] = $value;
                     }
                     break;
-               
-                // Add additional cases for other filters if needed.
+
+                // Additional cases for new filters can be added here if needed.
             }
         }
     }
 }
 
-// Add limit to the SQL query (casting to integer for security)
+// Add a LIMIT clause to restrict the number of rows returned (casted to integer for security)
 $sql .= " LIMIT " . (int)$limit;
 
-error_log("SQL Query: " . $sql);
-
-// Prepare and execute the SQL query
+// Prepare the SQL query
 $stmt = $conn->prepare($sql);
 
-// Bind the filter parameters dynamically
+// Bind dynamic filter parameters (if any) using prepared statements to prevent SQL injection
 foreach ($params as $param => $val) {
     $stmt->bindValue($param, $val, PDO::PARAM_STR);
 }
 
+// Execute the query
 $stmt->execute();
 
-// Fetch the results
+// Fetch the results as an associative array
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Return the results as a JSON response
 echo json_encode([
-    "status" => "success",
-    "query" => $sql,
-    "parameters" => $params,
-    "members" => $results
+    "status" => "success",     // Indicate that the query was successful
+    "query" => $sql,           // Return the generated SQL query for debugging
+    "parameters" => $params,   // Show applied filter parameters
+    "members" => $results      // The retrieved member records
 ]);
 ?>
