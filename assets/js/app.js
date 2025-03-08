@@ -53,7 +53,7 @@ $(document).ready(function () {
 
   // Function to get the filter options from the database and create select dropdowns dynamically
   $.ajax({
-    url: "queries/get_filter_options.php", // Ensure this is the correct path to your PHP script
+    url: "queries/render_filters.php", // Ensure this is the correct path to your PHP script
     type: "GET",
     dataType: "json",
     success: function (response) {
