@@ -12,23 +12,36 @@ if (!empty($filter_values) && is_array($filter_values)) {
     foreach ($filter_values as $key => $value) {
         if ($value !== "All" && $value !== null && $value !== "") {  
             switch ($key) {
+                // Numeric Exact Match (IDs)
                 case 'ID':
                 case 'LSF_Number':
                     $sql .= " AND $key = :$key";
                     $params[":$key"] = (int) $value;
                     break;
+
+                // Dropdown Exact Match
                 case 'State':
                 case 'Country':
                 case 'Country_Coordinator':
-                case 'SAPAspFilt':
-                case 'eSAPAspFilt':
-                case 'deceasedFilt':
-                case 'dupFilt':
-                case 'hiSAPFilt':
-                case 'hiESAPFilt':
+                case 'SAP_Level':
+                case 'eSAP_Level':
                     $sql .= " AND $key = :$key";
                     $params[":$key"] = $value;
                     break;
+
+                // Binary Yes/No (NULL or NOT NULL check)
+                case 'SAP_Aspirant':
+                case 'eSAP_Aspirant':
+                case 'Deceased':
+                case 'Duplicate':
+                    if ($value === "Yes") {
+                        $sql .= " AND $key IS NOT NULL";
+                    } elseif ($value === "No") {
+                        $sql .= " AND $key IS NULL";
+                    }
+                    break;
+
+                // General Search (LIKE for partial matches)
                 default:
                     $sql .= " AND $key LIKE :$key";
                     $params[":$key"] = "%$value%";

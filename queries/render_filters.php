@@ -21,12 +21,12 @@ try {
         "State" => "State",
         "Country" => "Country",
         "Country_Coordinator" => "Country_Coordinator",
-        "SAPAspFilt" => "SAP_Aspirant",
-        "eSAPAspFilt" => "eSAP_Aspirant",
-        "deceasedFilt" => "Deceased",
-        "dupFilt" => "Duplicate",
-        "hiSAPFilt" => "SAP_Level",
-        "hiESAPFilt" => "eSAP_Level"
+        "SAP_Aspirant" => "SAP_Aspirant",
+        "eSAP_Aspirant" => "eSAP_Aspirant",
+        "Deceased" => "Deceased",
+        "Duplicate" => "Duplicate",
+        "SAP_Level" => "SAP_Level",
+        "eSAP_Level" => "eSAP_Level"
     ];
 
     $filterOptions = [];
@@ -35,9 +35,13 @@ try {
         if (in_array($column, ["State", "Country", "Country_Coordinator", "SAP_Level", "eSAP_Level"])) {
             // Dropdown filters (get distinct values)
             $stmt = $conn->prepare("SELECT DISTINCT $column FROM members WHERE $column IS NOT NULL ORDER BY $column ASC");
+            // executes statment
             $stmt->execute();
+            // fetches all rows
             $values = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            // adds "All" option to the beginning of the array
             array_unshift($values, "All");
+            // sets the key to the values
             $filterOptions[$key] = $values;
         } elseif (in_array($column, ["SAP_Aspirant", "eSAP_Aspirant", "Deceased", "Duplicate"])) {
             // Yes/No dropdowns

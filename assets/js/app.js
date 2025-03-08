@@ -62,16 +62,19 @@ $(document).ready(function () {
           let filterContainer = $("#fil-sch-ctnr");
 
           filterContainer.empty();
-
+          // Loop through filter options and create inputs/dropdowns dynamically
           Object.keys(filterOptions).forEach((filterKey) => {
+            // Check if filter data is an array or object
             let filterData = filterOptions[filterKey];
             let filterHtml = "";
-
+            // checks if the filterData is an array, if it is, it creates a dropdown  with the values in the array
             if (Array.isArray(filterData)) {
               // Dropdowns with user-friendly labels
               let optionsHtml = filterData
                 .map((value) => `<option value="${value}">${value}</option>`)
+
                 .join("");
+
               filterHtml = `
                                 <div class="filt-item">
                                     <label>${filterKey.replace(
