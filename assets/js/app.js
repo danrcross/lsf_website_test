@@ -1,4 +1,19 @@
 $(document).ready(function () {
+  // Test render_sort.php
+
+  function sortData() {
+    $.ajax({
+      url: "queries/render_sort.php",
+      type: "GET",
+      dataType: "json",
+      success: function (response) {
+        console.log(response.testResponse);
+      },
+      error: function (xhr, status, error) {
+        console.error("AJAX error:", error);
+      },
+    });
+  }
   // Fetch and render columns dynamically
   function fetchColumns() {
     $.ajax({
@@ -137,13 +152,37 @@ $(document).ready(function () {
     console.log("Collected Filters:", filterVals);
     return filterVals;
   }
-
+  // Render sort options
+  function renderSort(columns) {
+    let sortContainer = $("#sortOptions");
+    sortContainer.empty();
+    sortContainer.append(`
+                <label for="sort">Sort by:</label>
+                  <select id="sort">
+                    ${columns.map((column) => {
+                      return `<option value="${column}">${column.replace(
+                        /_/g,
+                        " "
+                      )}</option>`;
+                    })}
+                  </select>
+                  <select id="order">
+                    <option value="ASC">Ascending</option>
+                    <option value="DESC">Descending</option>
+                  </select>
+                  <button id="sortBtn">Sort</button>
+            `);
+    columns.forEach((column) => {
+      console.log(column);
+    });
+  }
   // Render members in a table
   function renderMembers(members) {
+    // creates a table for the members array
     let output = "<table border='1'><thead><tr>";
-
+    // checks if the members array is empty; if it is, it returns an empty table; if it is not, it returns a the names of the columns as the table headers
     let columns = Object.keys(members.length ? members[0] : {});
-
+    renderSort(columns);
     // Table headers
     columns.forEach((column) => {
       output += `<th>${column.replace(/_/g, " ")}</th>`;
@@ -204,4 +243,5 @@ $(document).ready(function () {
   // Fetch columns and filters on page load
   fetchColumns();
   fetchFilters();
+  sortData();
 });
