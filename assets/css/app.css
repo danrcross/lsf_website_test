@@ -11,3 +11,34 @@
 .hidden {
   display: none;
 }
+
+/* Ensures the table fits within its container but allows horizontal scrolling */
+.table-container {
+  width: 100%;
+  overflow-x: auto; /* Enables horizontal scrolling */
+  max-width: 100%;
+  border: 1px solid #ccc;
+}
+
+/* Makes the table take up its full width but does not overflow its container */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* Ensures the table has a minimum width */
+}
+
+/* Styling for table headers and cells */
+th,
+td {
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+  white-space: nowrap; /* Prevents text wrapping */
+}
+
+/* Ensures the headers are clearly visible */
+thead {
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0;
+}

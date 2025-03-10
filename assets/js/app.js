@@ -1,19 +1,16 @@
 $(document).ready(function () {
-  // Test render_sort.php
-
-  function sortData() {
-    $.ajax({
-      url: "queries/render_sort.php",
-      type: "GET",
-      dataType: "json",
-      success: function (response) {
-        console.log(response.testResponse);
-      },
-      error: function (xhr, status, error) {
-        console.error("AJAX error:", error);
-      },
-    });
-  }
+  // Event listener for tabs at top of page
+  $("#tabs").tabs();
+  // Object to store query parameters
+  let myQuery = {
+    columns: [],
+    filters: {},
+    limit: 10,
+    sortColumn: "id",
+    sortOrder: "ASC",
+    perPage: 10,
+    page: 1,
+  };
   // Fetch and render columns dynamically
   function fetchColumns() {
     $.ajax({
@@ -119,6 +116,12 @@ $(document).ready(function () {
 
             filterContainer.append(filterHtml);
           });
+          // Add "Reset Filters" button
+          filterContainer.append(`
+                  <div class="reset-container">
+                      <button id="resetFilters">Reset Filters</button>
+                  </div>
+              `);
         }
       },
       error: function (xhr, status, error) {
@@ -126,6 +129,14 @@ $(document).ready(function () {
       },
     });
   }
+  // Handle the "Reset Filters" button click
+  $(document).on("click", "#resetFilters", function () {
+    // Clear all text inputs
+    $("input[id^='filt-']").val("");
+
+    // Reset all dropdowns to "All"
+    $("select[id^='filt-']").val("All");
+  });
 
   // Collect filter values from UI
   function getFilterValues() {
@@ -148,12 +159,11 @@ $(document).ready(function () {
         filterVals[key] = value;
       }
     });
-
-    console.log("Collected Filters:", filterVals);
     return filterVals;
   }
   // Render sort options
-  function renderSort(columns) {
+  function renderSort(members) {
+    let columns = Object.keys(members.length ? members[0] : {});
     let sortContainer = $("#sortOptions");
     sortContainer.empty();
     sortContainer.append(`
@@ -172,22 +182,34 @@ $(document).ready(function () {
                   </select>
                   <button id="sortBtn">Sort</button>
             `);
-    columns.forEach((column) => {
-      console.log(column);
-    });
   }
+  // Handle sort options: stores the selected sort column and order into the myQuery object
+  $(document).on("change", "#sort, #order", function () {
+    myQuery.sortColumn = $("#sort").val();
+    myQuery.sortOrder = $("#order").val();
+  });
   // Render members in a table
   function renderMembers(members) {
-    // creates a table for the members array
-    let output = "<table border='1'><thead><tr>";
-    // checks if the members array is empty; if it is, it returns an empty table; if it is not, it returns a the names of the columns as the table headers
+    let output = `
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+    `;
+
+    // Check if the members array is empty; if it is, return an empty table
     let columns = Object.keys(members.length ? members[0] : {});
-    renderSort(columns);
+
     // Table headers
     columns.forEach((column) => {
       output += `<th>${column.replace(/_/g, " ")}</th>`;
     });
-    output += "</tr></thead><tbody>";
+
+    output += `
+            </tr>
+          </thead>
+          <tbody class="scrollable-tbody">
+    `;
 
     // Table rows
     members.forEach((member) => {
@@ -198,38 +220,164 @@ $(document).ready(function () {
       output += "</tr>";
     });
 
-    output += "</tbody></table>";
+    output += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
     $("#results").html(output);
   }
 
+  function createPages(members) {
+    let totalResults = members.length;
+    let perPage = myQuery.perPage;
+    perPage = parseInt(perPage) || 10; // Default per page if not provided
+    let totalPages = Math.ceil(totalResults / perPage);
+
+    let paginatedData = {
+      totalResults: totalResults,
+      perPage: perPage,
+      totalPages: totalPages,
+      pages: {}, // Object to store each page separately
+    };
+
+    // Split members into pages
+    for (let i = 0; i < totalPages; i++) {
+      let start = i * perPage;
+      paginatedData.pages[i + 1] = members.slice(start, start + perPage);
+    }
+
+    // Save paginated data to localStorage
+    localStorage.setItem("paginatedMembers", JSON.stringify(paginatedData));
+  }
+
+  function renderPagination() {
+    let paginatedData = JSON.parse(localStorage.getItem("paginatedMembers"));
+    if (!paginatedData) return;
+
+    let { totalPages } = paginatedData;
+    let currentPage = myQuery.page || 1;
+
+    let paginationHTML = `
+        <div class="pagination-controls">
+            <button id="prevPage" ${
+              currentPage === 1 ? "disabled" : ""
+            }>Previous</button>
+            <select id="pageSelect">
+                ${Array.from(
+                  { length: totalPages },
+                  (_, i) =>
+                    `<option value="${i + 1}" ${
+                      i + 1 === currentPage ? "selected" : ""
+                    }>
+                        Page ${i + 1} of ${totalPages}
+                    </option>`
+                ).join("")}
+            </select>
+            <button id="nextPage" ${
+              currentPage === totalPages ? "disabled" : ""
+            }>Next</button>
+        </div>
+    `;
+
+    $("#pagination").html(paginationHTML);
+  }
+
+  // Update the page with new data, based on the current page number
+  function updatePage() {
+    let paginatedData = JSON.parse(localStorage.getItem("paginatedMembers"));
+    let pageData = paginatedData.pages[myQuery.page] || [];
+
+    renderMembers(pageData);
+    renderPagination();
+  }
   // Handle the search button click
   $("#searchBtn").click(function () {
-    let columns = [];
-    let limit = $("#limitInput").val();
-    let filterVals = getFilterValues();
-
     // Collect selected columns
+    let selectedColumns = [];
     $('input[data-col="col-select"]').each(function () {
       if ($(this).is(":checked")) {
-        columns.push($(this).attr("name"));
+        selectedColumns.push($(this).attr("name"));
       }
     });
-
-    console.log("Sending to query.php:", {
-      limit: limit,
-      columns: columns,
-      filterVals: filterVals,
-    });
+    // update myQuery object with the selected columns
+    myQuery = {
+      columns: selectedColumns,
+      filters: getFilterValues(),
+      limit: $("#limitInput").val(),
+      perPage: $("#perPageInput").val(),
+      sortColumn: "id",
+      sortOrder: "ASC",
+    };
+    console.log(myQuery);
 
     $.ajax({
       url: "query.php",
       type: "POST",
-      data: { limit: limit, columns: columns, filterVals: filterVals },
+      data: {
+        limit: myQuery.limit,
+        columns: myQuery.columns,
+        filterVals: myQuery.filters,
+        sortColumn: myQuery.sortColumn,
+        sortOrder: myQuery.sortOrder,
+      },
       dataType: "json",
       success: function (response) {
-        console.log("Query Results:", response);
         if (response.status === "success" && response.members.length > 0) {
-          renderMembers(response.members);
+          createPages(response.members);
+          myQuery.page = 1; // Reset to page 1 on new search
+          updatePage(); // Load first page and pagination controls
+          renderSort(response.members);
+        } else {
+          $("#results").html("<p>No results found.</p>");
+        }
+      },
+
+      error: function () {
+        $("#results").html("<p>Server error. Please try again.</p>");
+      },
+    });
+  });
+
+  // Handle pagination button clicks
+  $(document).on("click", "#prevPage", function () {
+    if (myQuery.page > 1) {
+      myQuery.page--;
+      updatePage();
+    }
+  });
+
+  $(document).on("click", "#nextPage", function () {
+    let paginatedData = JSON.parse(localStorage.getItem("paginatedMembers"));
+    if (myQuery.page < paginatedData.totalPages) {
+      myQuery.page++;
+      updatePage();
+    }
+  });
+
+  $(document).on("change", "#pageSelect", function () {
+    myQuery.page = parseInt($(this).val());
+    updatePage();
+  });
+
+  function sortData({ limit, columns, filters, sortColumn, sortOrder }) {
+    $.ajax({
+      url: "query.php",
+      type: "POST",
+      data: {
+        limit: myQuery.limit,
+        columns: myQuery.columns,
+        filterVals: myQuery.filters,
+        sortColumn: myQuery.sortColumn,
+        sortOrder: myQuery.sortOrder,
+      },
+      dataType: "json",
+      success: function (response) {
+        if (response.status === "success" && response.members.length > 0) {
+          createPages(response.members);
+          myQuery.page = 1; // Reset to page 1 on new search
+          updatePage(); // Load first page and pagination controls
         } else {
           $("#results").html("<p>No results found.</p>");
         }
@@ -238,10 +386,13 @@ $(document).ready(function () {
         $("#results").html("<p>Server error. Please try again.</p>");
       },
     });
+  }
+
+  $(document).on("click", "#sortBtn", function () {
+    sortData(myQuery);
   });
 
   // Fetch columns and filters on page load
   fetchColumns();
   fetchFilters();
-  sortData();
 });

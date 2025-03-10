@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Page</title>
+    <title>LSF Admin Page</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
     <script src="assets/js/app.js"></script>
@@ -15,31 +15,73 @@
   </head>
   <body>
     <h1>Admin Page</h1>
-    <h2>Filter and Search Database</h2>
-    <fieldset>
-      <legend>Columns to include</legend>
-      <div id="col-sel-ctnr" class="flex-container"></div>
-    </fieldset>
-    <fieldset>
-      <legend>Filter/Search</legend>
-      <div id="fil-sch-ctnr" class="flex-container"></div>
-    </fieldset>
-    <div id="srch-lim-ctnr">
-      <fieldset>
-        <legend for="limitInput">Limit results to:</legend>
-        <input
-          type="number"
-          id="limitInput"
-          placeholder="Number of results"
-          value="10"
-        />
-        <button id="searchBtn">Search</button>
-      </fieldset>
-    </div>
 
-    <h2>Results:</h2>
-    <div id="sortOptions"></div>
-    <div id="results"></div>
-    <div id="pagination"></div>
+    <div id="tabs">
+      <ul>
+        <li><a href="#searchTab">Search Database</a></li>
+        <li><a href="#addMemberTab">Add New Member</a></li>
+      </ul>
+
+      <div id="searchTab">
+        <h2>Filter and Search Database</h2>
+        <fieldset>
+          <legend>Columns to include</legend>
+          <div id="col-sel-ctnr" class="flex-container"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Filter/Search</legend>
+          <div id="fil-sch-ctnr" class="flex-container"></div>
+        </fieldset>
+        <div id="srch-lim-ctnr">
+          <fieldset>
+            <legend>Limit Results:</legend>
+
+            <label for="limitInput">Total Results:</label>
+            <input
+              type="number"
+              id="limitInput"
+              placeholder="Total results"
+              value="10"
+              min="1"
+            />
+
+            <label for="resultsPerPageInput">Results per Page:</label>
+            <input
+              type="number"
+              id="perPageInput"
+              placeholder="Results per page"
+              value="5"
+              min="1"
+            />
+
+            <button id="searchBtn">Search</button>
+          </fieldset>
+        </div>
+
+        <h2>Results:</h2>
+        <div id="sortOptions"></div>
+        <div id="results"></div>
+        <div id="pagination"></div>
+      </div>
+
+      <div id="addMemberTab">
+        <h2>Add New Member</h2>
+        <form id="addMemberForm">
+          <label for="name">Name:</label>
+          <input type="text" id="name" required />
+
+          <label for="email">Email:</label>
+          <input type="email" id="email" required />
+
+          <label for="role">Role:</label>
+          <select id="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+
+          <button type="submit">Add Member</button>
+        </form>
+      </div>
+    </div>
   </body>
 </html>
