@@ -42,3 +42,44 @@ thead {
   position: sticky;
   top: 0;
 }
+
+#addMemberForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two equal columns */
+  gap: 10px 20px; /* Row and column spacing */
+  align-items: center;
+  max-width: 700px; /* Adjust width as needed */
+  margin: 0 auto;
+}
+
+/* Ensure labels align properly */
+#addMemberForm label {
+  text-align: right;
+  font-weight: bold;
+}
+
+/* Make input fields and selects fill their column */
+#addMemberForm input,
+#addMemberForm select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Make the submit button span two columns */
+#addMemberForm button {
+  grid-column: span 2;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+#addMemberForm button:hover {
+  background-color: #0056b3;
+}
