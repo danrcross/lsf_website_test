@@ -2,14 +2,14 @@
 header("Content-Type: application/json");
 require_once "includes/config.php";
 
-// gets the limit, filter values, selected columns, and sort column/order from the POST request
+// Get the limit, filters, selected columns, and sort options from POST request
 $limit = isset($_POST['limit']) ? (int) $_POST['limit'] : 10;
 $filter_values = $_POST['filterVals'] ?? null;
-$selected_columns = isset($_POST['columns'])&& is_array($_POST['columns']) ? $_POST['columns'] : ['*'];
+$selected_columns = isset($_POST['columns']) && is_array($_POST['columns']) ? $_POST['columns'] : ['*'];
 $sortColumn = $_POST['sortColumn'] ?? null;
 $sortOrder = strtoupper($_POST['sortOrder'] ?? 'ASC'); // Default to ASC
 
-// validate selected columns to prevent SQL injection
+// Define allowed columns to prevent SQL injection
 $allowed_columns = [
     'id', 'LSF_Number', 'First_Name', 'Last_Name', 'Address', 'City', 'State', 'Zip', 'Country',
     'Country_Coordinator', 'email', 'Last_Contact', 'AMA_Number', 'SAP_Aspirant', 'SAP_Level_1', 
@@ -17,11 +17,25 @@ $allowed_columns = [
     'eSAP_Level_2', 'eSAP_Level_3', 'eSAP_Level_4', 'eSAP_Level_5', 'SAP_Level', 'eSAP_Level', 
     'Miscellaneous', 'Deceased', 'Duplicate'
 ];
-$columns= array_intersect($selected_columns, $allowed_columns);
-$columns_sql= !empty($columns) ? implode(", ", $columns) : "*";
+
+// Fetch the total count of members in the database
+$totalCountQuery = "SELECT COUNT(*) as total FROM members";
+$totalCountStmt = $conn->prepare($totalCountQuery);
+$totalCountStmt->execute();
+$totalCount = $totalCountStmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Ensure limit does not exceed total members
+$limit = min($limit, $totalCount);
+
+// Validate and clean selected columns
+$columns = array_intersect($selected_columns, $allowed_columns);
+$columns_sql = !empty($columns) ? implode(", ", $columns) : "*";
+
+// Base SQL query
 $sql = "SELECT $columns_sql FROM members WHERE 1=1";
 $params = [];
 
+// Handle filters
 if (!empty($filter_values) && is_array($filter_values)) {
     foreach ($filter_values as $key => $value) {
         if ($value !== "All" && $value !== null && $value !== "") {  
@@ -45,16 +59,21 @@ if (!empty($filter_values) && is_array($filter_values)) {
                     $params[":$key"] = $value;
                     break;
 
-                // Binary Yes/No (NULL or NOT NULL check)
-                case 'SAP_Aspirant':
-                case 'eSAP_Aspirant':
+                // Binary Yes/No (0 or NULL treated equally)
                 case 'Deceased':
                 case 'Duplicate':
-                    if ($value === "Yes") {
-                        $sql .= " AND $key IS NOT NULL";
-                    } elseif ($value === "No") {
-                        $sql .= " AND $key IS NULL";
+                    if ($value === "1") {
+                        $sql .= " AND $key = 1"; // Yes → 1
+                    } elseif ($value === "0") {
+                        $sql .= " AND ($key = 0 OR $key IS NULL)"; // No → 0 or NULL
                     }
+                    break;
+
+                // Dates: Exact Match
+                case 'SAP_Aspirant':
+                case 'eSAP_Aspirant':
+                    $sql .= " AND $key = :$key";
+                    $params[":$key"] = $value;
                     break;
 
                 // General Search (LIKE for partial matches)
@@ -72,30 +91,33 @@ if (!empty($filter_values) && is_array($filter_values)) {
     }
 }
 
-
-// Validate and apply sorting if a valid column is provided
+// Validate and apply sorting
 if (in_array($sortColumn, $allowed_columns)) {
     $sortOrder = ($sortOrder === "DESC") ? "DESC" : "ASC"; // Ensure only ASC or DESC is allowed
     $sql .= " ORDER BY $sortColumn $sortOrder";
 }
+
 // Add LIMIT clause
 $sql .= " LIMIT :limit";
 $params[':limit'] = $limit;
 
+// Prepare statement
 $stmt = $conn->prepare($sql);
 
-// Bind parameters correctly
+// Bind parameters
 foreach ($params as $param => $val) {
     $stmt->bindValue($param, $val, is_int($val) ? PDO::PARAM_INT : PDO::PARAM_STR);
 }
 
-// Log SQL query and bound parameters for debugging
+// Debugging logs (useful for troubleshooting)
 error_log("Executing SQL: " . $sql);
 error_log("Bound Parameters: " . print_r($params, true));
 
+// Execute query and fetch results
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Return JSON response
-echo json_encode(["status" => "success", "members" => $results]);
+echo json_encode(["status" => "success", "members" => $results, "totalCount" => $totalCount]);
 ?>
+
