@@ -39,7 +39,7 @@ The site should be accessible thereafter.
 
 Below, I give a text/image-based overview of the web application.
 
-For a more detailed tutorial of usage of the application, [click this link to the video tutorial.](videolink)
+For a more detailed tutorial of usage of the application, [click this link to the video tutorial.](https://drive.google.com/file/d/1aRPZ4tEvGw10G-RteV6DArJxlBTrTnCL/view?usp=sharing)
 
 ---
 
