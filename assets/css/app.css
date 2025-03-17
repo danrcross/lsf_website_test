@@ -1,64 +1,138 @@
+h1 {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+/* General Section Titles */
+.section-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  background-color: #f4f4f4;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* Grid layout for column selection */
 #col-sel-ctnr {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  padding: 10px;
+}
+
+/* Toggle Button */
+#select-all-toggle {
+  display: block;
+  margin-bottom: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Checkbox Layout */
+.checkbox-item {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  flex-direction: row;
-  justify-content: flex-start;
   align-items: center;
-  margin: 10px 20px;
 }
 
-.hidden {
+/* Filter Groups */
+.filter-group,
+.add-member-group {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+}
+
+/* Collapsible Legend */
+.filter-group legend,
+.add-member-group legend {
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px 10px;
+  background-color: #345a82;
+  color: white;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Hide Fields Initially */
+.filter-items,
+.add-member-fields {
   display: none;
+  padding-top: 10px;
 }
 
-/* Ensures the table fits within its container but allows horizontal scrolling */
+/* Reset Filters Button */
+#resetFilters {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Table Container */
 .table-container {
   width: 100%;
-  overflow-x: auto; /* Enables horizontal scrolling */
+  overflow-x: auto;
   max-width: 100%;
   border: 1px solid #ccc;
 }
 
-/* Makes the table take up its full width but does not overflow its container */
+/* Table */
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px; /* Ensures the table has a minimum width */
+  min-width: 800px;
 }
 
-/* Styling for table headers and cells */
 th,
 td {
   padding: 8px 12px;
   text-align: left;
   border: 1px solid #ddd;
-  white-space: nowrap; /* Prevents text wrapping */
+  white-space: nowrap; /* Prevents wrapping */
 }
 
-/* Ensures the headers are clearly visible */
+/* Sticky Table Headers */
 thead {
   background-color: #f4f4f4;
   position: sticky;
   top: 0;
 }
 
+/* Add Member Form */
 #addMemberForm {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Two equal columns */
-  gap: 10px 20px; /* Row and column spacing */
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
   align-items: center;
-  max-width: 700px; /* Adjust width as needed */
+  max-width: 700px;
   margin: 0 auto;
 }
 
-/* Ensure labels align properly */
+/* Adjust to Single Column on Mobile */
+@media (max-width: 600px) {
+  #addMemberForm {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form Labels */
 #addMemberForm label {
   text-align: right;
   font-weight: bold;
 }
 
-/* Make input fields and selects fill their column */
+/* Form Inputs */
 #addMemberForm input,
 #addMemberForm select {
   width: 100%;
@@ -67,19 +141,20 @@ thead {
   border-radius: 4px;
 }
 
-/* Make the submit button span two columns */
+/* Submit Button */
 #addMemberForm button {
   grid-column: span 2;
   padding: 10px;
   font-size: 16px;
-  background-color: #007bff;
+  background-color: #28a745;
   color: white;
   border: none;
   cursor: pointer;
   text-transform: uppercase;
   margin-top: 10px;
+  border-radius: 5px;
 }
 
 #addMemberForm button:hover {
-  background-color: #0056b3;
+  background-color: #218838;
 }

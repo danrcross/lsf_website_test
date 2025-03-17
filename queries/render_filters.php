@@ -8,7 +8,6 @@ try {
     }
 
     $filters = [
-        "ID" => "id",
         "LSF_Number" => "LSF_Number",
         "First_Name" => "First_Name",
         "Last_Name" => "Last_Name",

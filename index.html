@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LSF Admin Page</title>
+    <title>LSF Member Database</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
     <script src="assets/js/app.js"></script>
@@ -14,16 +14,16 @@
     <link rel="stylesheet" href="assets/css/app.css" />
   </head>
   <body>
-    <h1>LSF Admin Page</h1>
+    <h1>LSF Member Database</h1>
 
     <div id="tabs">
       <ul>
-        <li><a href="#searchTab">Search Database</a></li>
+        <li><a href="#searchTab">Database</a></li>
         <li><a href="#addMemberTab">Add New Member</a></li>
       </ul>
 
       <div id="searchTab">
-        <h2>Filter and Search Database</h2>
+        <h2 class="section-title">Search, Edit, and Delete Members</h2>
         <fieldset>
           <legend>Columns to include</legend>
           <div id="col-sel-ctnr" class="flex-container"></div>
@@ -65,7 +65,7 @@
       </div>
 
       <div id="addMemberTab">
-        <h2>Add New Member</h2>
+        <h2 class="section-title">Add New Member</h2>
         <form id="addMemberForm">
           <label for="name">Name:</label>
           <input type="text" id="name" required />
