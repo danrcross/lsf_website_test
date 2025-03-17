@@ -21,6 +21,7 @@ $(document).ready(function () {
     page: 1,
   };
   // Fetch and render columns dynamically
+  // Fetch and render columns dynamically
   function fetchColumns() {
     $.ajax({
       url: "queries/render_columns.php",
@@ -28,38 +29,43 @@ $(document).ready(function () {
       dataType: "json",
       success: function (response) {
         if (response.status === "success") {
-          let columns = response.columns;
+          let columnGroups = response.columnGroups;
           let container = $("#col-sel-ctnr");
 
           // Clear existing checkboxes
           container.empty();
 
-          // Create "Select All" checkbox
+          // Add "Select All" toggle button
           container.append(`
+                    <button id="select-all-toggle" class="toggle-btn">Select All</button>
+                `);
+
+          // Loop through column groups and create checkboxes
+          Object.keys(columnGroups).forEach((group) => {
+            let checkboxHTML = `
                         <div class="checkbox-item">
-                            <label for="select-all">
-                                Select all
-                                <input type="checkbox" id="select-all" />
+                            <label for="cb-${group}">
+                                ${group}
+                                <input type="checkbox" class="column-group" id="cb-${group}" data-columns="${columnGroups[
+              group
+            ].join(",")}" />
                             </label>
                         </div>
-                    `);
-
-          // Loop through columns and create checkboxes dynamically
-          columns.forEach((column) => {
-            let checkboxHTML = `
-                            <div class="checkbox-item">
-                                <label for="${column}">
-                                    ${column.replace(/_/g, " ")}
-                                    <input type="checkbox" name="${column}" id="cb-col-${column}" data-col="col-select" />
-                                </label>
-                            </div>
-                        `;
+                    `;
             container.append(checkboxHTML);
           });
 
-          // "Select All" functionality
-          $("#select-all").change(function () {
-            $("input[data-col='col-select']").prop("checked", this.checked);
+          // "Select All" Toggle Button Functionality
+          $("#select-all-toggle").click(function () {
+            let allChecked =
+              $(".column-group").length === $(".column-group:checked").length;
+            $(".column-group").prop("checked", !allChecked);
+            $(this).text(allChecked ? "Select All" : "Deselect All");
+          });
+
+          // Handle individual group checkbox selection
+          $(document).on("change", ".column-group", function () {
+            updateSelectedColumns();
           });
         } else {
           console.error("Error fetching columns:", response.message);
@@ -69,6 +75,18 @@ $(document).ready(function () {
         console.error("AJAX error:", error);
       },
     });
+  }
+
+  // Update selected columns dynamically
+  function updateSelectedColumns() {
+    let selectedColumns = ["id"]; // Ensure ID is always included
+
+    $(".column-group:checked").each(function () {
+      let columns = $(this).data("columns").split(",");
+      selectedColumns.push(...columns);
+    });
+
+    myQuery.columns = selectedColumns;
   }
 
   // Fetch and render filters dynamically
@@ -82,55 +100,104 @@ $(document).ready(function () {
           let filterOptions = response.filterOptions;
           let filterContainer = $("#fil-sch-ctnr");
 
-          filterContainer.empty();
-          // Loop through filter options and create inputs/dropdowns dynamically
-          Object.keys(filterOptions).forEach((filterKey) => {
-            // Check if filter data is an array or object
-            let filterData = filterOptions[filterKey];
-            let filterHtml = "";
-            // checks if the filterData is an array, if it is, it creates a dropdown  with the values in the array
-            if (Array.isArray(filterData)) {
-              // Dropdowns with user-friendly labels
-              let optionsHtml = filterData
-                .map((value) => `<option value="${value}">${value}</option>`)
+          filterContainer.empty(); // Clear existing filters
 
-                .join("");
+          // Define filter groups
+          const filterGroups = {
+            "LSF Number": ["LSF_Number"],
+            "AMA Number": ["AMA_Number"],
+            Name: ["First_Name", "Last_Name"],
+            Location: [
+              "Address",
+              "City",
+              "State",
+              "Zip",
+              "Country",
+              "Country_Coordinator",
+            ],
+            "SAP Data": [
+              "SAP_Aspirant",
+              "SAP_Level_1",
+              "SAP_Level_2",
+              "SAP_Level_3",
+              "SAP_Level_4",
+              "SAP_Level_5",
+              "SAP_Level",
+            ],
+            "eSAP Data": [
+              "eSAP_Aspirant",
+              "eSAP_Level_1",
+              "eSAP_Level_2",
+              "eSAP_Level_3",
+              "eSAP_Level_4",
+              "eSAP_Level_5",
+              "eSAP_Level",
+            ],
+            Miscellaneous: ["Miscellaneous", "Deceased", "Duplicate"],
+          };
 
-              filterHtml = `
-                                <div class="filt-item">
-                                    <label>${filterKey.replace(
-                                      /_/g,
-                                      " "
-                                    )}:</label>
-                                    <select id="filt-${filterKey}">
-                                        ${optionsHtml}
-                                    </select>
-                                </div>
-                            `;
-            } else {
-              // Search input fields
-              filterHtml = `
-                                <div class="filt-item">
-                                    <label>${filterKey.replace(
-                                      /_/g,
-                                      " "
-                                    )}:</label>
-                                    <input type="text" id="filt-${filterKey}" placeholder="Search ${filterKey.replace(
-                /_/g,
-                " "
-              )}">
-                                </div>
-                            `;
-            }
+          // Loop through filter groups
+          Object.keys(filterGroups).forEach((group) => {
+            let fields = filterGroups[group];
+            let filterHtml = `
+                        <fieldset class="filter-group">
+                            <legend>
+                                ${group}
+                                <span class="toggle-arrow">▼</span>
+                            </legend>
+                            <div class="filter-items">`;
 
+            // Loop through fields in each group
+            fields.forEach((field) => {
+              if (filterOptions[field]) {
+                if (Array.isArray(filterOptions[field])) {
+                  // Dropdown menu
+                  let optionsHtml = filterOptions[field]
+                    .map(
+                      (value) => `<option value="${value}">${value}</option>`
+                    )
+                    .join("");
+
+                  filterHtml += `
+                                    <div class="filt-item">
+                                        <label for="filt-${field}">${field.replace(
+                    /_/g,
+                    " "
+                  )}:</label>
+                                        <select id="filt-${field}">
+                                            <option value="">All</option>
+                                            ${optionsHtml}
+                                        </select>
+                                    </div>
+                                `;
+                } else {
+                  // Text input
+                  filterHtml += `
+                                    <div class="filt-item">
+                                        <label for="filt-${field}">${field.replace(
+                    /_/g,
+                    " "
+                  )}:</label>
+                                        <input type="text" id="filt-${field}" placeholder="Search ${field.replace(
+                    /_/g,
+                    " "
+                  )}">
+                                    </div>
+                                `;
+                }
+              }
+            });
+
+            filterHtml += `</div></fieldset>`; // Close fieldset
             filterContainer.append(filterHtml);
           });
-          // Add "Reset Filters" button
+
+          // Add Reset Filters Button
           filterContainer.append(`
-                  <div class="reset-container">
-                      <button id="resetFilters">Reset Filters</button>
-                  </div>
-              `);
+                    <div class="reset-container">
+                        <button id="resetFilters">Reset Filters</button>
+                    </div>
+                `);
         }
       },
       error: function (xhr, status, error) {
@@ -139,9 +206,20 @@ $(document).ready(function () {
     });
   }
 
+  // Handle collapsible filter groups
+  // Handle collapsible filter groups with arrow indicators
+  $(document).on("click", ".filter-group legend", function () {
+    let filterItems = $(this).next(".filter-items");
+    let arrow = $(this).find(".toggle-arrow");
+
+    filterItems.slideToggle(200, function () {
+      arrow.text(filterItems.is(":visible") ? "▲" : "▼");
+    });
+  });
+
   function fetchAddMemberFields() {
     $.ajax({
-      url: "queries/render_add_fields.php", // PHP script to fetch column metadata
+      url: "queries/render_add_fields.php",
       type: "GET",
       dataType: "json",
       success: function (response) {
@@ -153,56 +231,96 @@ $(document).ready(function () {
 
           const nonEditableFields = ["id", "SAP_Level", "eSAP_Level"]; // Fields to exclude
 
-          // Loop through each field and create appropriate input elements
-          fields.forEach((field) => {
-            let fieldHtml = "";
-            let label = field.name.replace(/_/g, " "); // Clean column names
+          // Define field groups
+          const fieldGroups = {
+            "LSF Number": ["LSF_Number"],
+            "AMA Number": ["AMA_Number"],
+            Name: ["First_Name", "Last_Name"],
+            Location: [
+              "Address",
+              "City",
+              "State",
+              "Zip",
+              "Country",
+              "Country_Coordinator",
+            ],
+            "SAP Data": [
+              "SAP_Aspirant",
+              "SAP_Level_1",
+              "SAP_Level_2",
+              "SAP_Level_3",
+              "SAP_Level_4",
+              "SAP_Level_5",
+            ],
+            "eSAP Data": [
+              "eSAP_Aspirant",
+              "eSAP_Level_1",
+              "eSAP_Level_2",
+              "eSAP_Level_3",
+              "eSAP_Level_4",
+              "eSAP_Level_5",
+            ],
+            Miscellaneous: ["Miscellaneous", "Deceased", "Duplicate"],
+          };
 
-            // Skip non-editable fields
-            if (nonEditableFields.includes(field.name)) return;
+          // Loop through field groups
+          Object.keys(fieldGroups).forEach((group) => {
+            let fieldsInGroup = fieldGroups[group].filter(
+              (field) => !nonEditableFields.includes(field)
+            );
+            if (fieldsInGroup.length === 0) return; // Skip empty groups
 
-            // Ensure "Deceased" and "Duplicate" are dropdowns
-            if (field.name === "Deceased" || field.name === "Duplicate") {
-              fieldHtml = `
-                            <label for="${field.name}">${label}:</label>
-                            <select id="${field.name}" name="${field.name}">
-                                <option value="">Select</option>
-                                <option value="0">No</option>
-                                <option value="1">Yes</option>
-                            </select>
-                        `;
-            } else if (
-              field.type.includes("varchar") ||
-              field.type.includes("text")
-            ) {
-              // Text input (not required)
-              fieldHtml = `
-                            <label for="${field.name}">${label}:</label>
-                            <input type="text" id="${field.name}" name="${field.name}">
-                        `;
-            } else if (
-              field.type.includes("int") &&
-              field.name !== "Deceased" &&
-              field.name !== "Duplicate"
-            ) {
-              // Number input (not required)
-              fieldHtml = `
-                            <label for="${field.name}">${label}:</label>
-                            <input type="number" id="${field.name}" name="${field.name}">
-                        `;
-            } else if (field.type.includes("date")) {
-              // Date picker (not required)
-              fieldHtml = `
-                            <label for="${field.name}">${label}:</label>
-                            <input type="date" id="${field.name}" name="${field.name}">
-                        `;
-            }
+            let fieldHtml = `
+                        <fieldset class="add-member-group">
+                            <legend>
+                                ${group}
+                                <span class="toggle-arrow">▼</span>
+                            </legend>
+                            <div class="add-member-fields">`;
 
-            // Append field to the form
+            // Loop through each field in the group
+            fieldsInGroup.forEach((field) => {
+              let fieldData = fields.find((f) => f.name === field);
+              if (!fieldData) return;
+
+              let label = fieldData.name.replace(/_/g, " "); // Clean column names
+              let fieldInput = "";
+
+              if (["Deceased", "Duplicate"].includes(fieldData.name)) {
+                // Yes/No dropdowns
+                fieldInput = `
+                                <select id="${fieldData.name}" name="${fieldData.name}">
+                                    <option value="">Select</option>
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>`;
+              } else if (
+                fieldData.type.includes("varchar") ||
+                fieldData.type.includes("text")
+              ) {
+                // Text input
+                fieldInput = `<input type="text" id="${fieldData.name}" name="${fieldData.name}">`;
+              } else if (fieldData.type.includes("int")) {
+                // Number input
+                fieldInput = `<input type="number" id="${fieldData.name}" name="${fieldData.name}">`;
+              } else if (fieldData.type.includes("date")) {
+                // Date picker
+                fieldInput = `<input type="date" id="${fieldData.name}" name="${fieldData.name}">`;
+              }
+
+              fieldHtml += `
+                            <div class="member-field">
+                                <label for="${fieldData.name}">${label}:</label>
+                                ${fieldInput}
+                            </div>
+                        `;
+            });
+
+            fieldHtml += `</div></fieldset>`; // Close fieldset
             formContainer.append(fieldHtml);
           });
 
-          // Add the submit button
+          // Add Submit Button
           formContainer.append('<button type="submit">Add Member</button>');
         } else {
           console.error("Error fetching fields:", response.message);
@@ -213,6 +331,16 @@ $(document).ready(function () {
       },
     });
   }
+
+  // Handle collapsible add member groups with arrow indicators
+  $(document).on("click", ".add-member-group legend", function () {
+    let fields = $(this).next(".add-member-fields");
+    let arrow = $(this).find(".toggle-arrow");
+
+    fields.slideToggle(200, function () {
+      arrow.text(fields.is(":visible") ? "▲" : "▼");
+    });
+  });
 
   // Handle the "Reset Filters" button click
   $(document).on("click", "#resetFilters", function () {
@@ -445,9 +573,8 @@ $(document).ready(function () {
 
   // Delete Button Event Handler
   $(document).on("click", ".delete-btn", function () {
-    let rowIndex = $(this).data("index");
-    let row = $(`tr[data-index="${rowIndex}"]`);
-    let memberId = row.find("td:nth-child(2)").text().trim(); // Ensure it gets the correct ID
+    let row = $(this).closest("tr"); // Get the row to delete
+    let memberId = row.find("td:nth-child(2)").text().trim(); // Get member ID (assuming it's in the second column)
 
     if (!memberId) {
       alert("Error: Member ID is missing.");
@@ -466,27 +593,24 @@ $(document).ready(function () {
         if (response.success) {
           console.log("Delete successful:", response.message);
 
-          //  Remove row from localStorage data
-          let paginatedData = JSON.parse(
-            localStorage.getItem("paginatedMembers")
-          );
-          if (paginatedData) {
-            // Remove from the current page dataset
-            Object.keys(paginatedData.pages).forEach((page) => {
-              paginatedData.pages[page] = paginatedData.pages[page].filter(
-                (member) => member.id != memberId
-              );
-            });
+          // Remove the row from the UI immediately
+          row.remove();
 
-            // Update localStorage
-            localStorage.setItem(
-              "paginatedMembers",
-              JSON.stringify(paginatedData)
+          // Find and remove the member from paginatedData
+          Object.keys(paginatedData.pages).forEach((page) => {
+            paginatedData.pages[page] = paginatedData.pages[page].filter(
+              (member) => member.id != memberId
             );
+          });
 
-            // Refresh the current page
-            updatePage();
-          }
+          // Recalculate pagination to reflect the removed row
+          paginatedData.totalResults--;
+          paginatedData.totalPages = Math.ceil(
+            paginatedData.totalResults / paginatedData.perPage
+          );
+
+          // Update the UI
+          updatePage();
         } else {
           console.error("Delete failed:", response.message);
           alert("Error: " + response.message);
@@ -606,23 +730,18 @@ $(document).ready(function () {
 
   // Handle the search button click
   $("#searchBtn").click(function () {
-    // Collect selected columns
-    let selectedColumns = [];
-    $('input[data-col="col-select"]').each(function () {
-      if ($(this).is(":checked")) {
-        selectedColumns.push($(this).attr("name"));
-      }
-    });
-    // update myQuery object with the selected columns
+    updateSelectedColumns(); // Ensure selected columns are updated
+
+    // Update myQuery object
     myQuery = {
-      columns: selectedColumns,
+      columns: myQuery.columns, // Use the updated column selection
       filters: getFilterValues(),
       limit: $("#limitInput").val(),
       perPage: $("#perPageInput").val(),
       sortColumn: "id",
       sortOrder: "ASC",
+      page: 1,
     };
-    console.log(myQuery);
 
     $.ajax({
       url: "query.php",
@@ -638,14 +757,12 @@ $(document).ready(function () {
       success: function (response) {
         if (response.status === "success" && response.members.length > 0) {
           createPages(response.members);
-          myQuery.page = 1; // Reset to page 1 on new search
-          updatePage(); // Load first page and pagination controls
+          updatePage();
           renderSort(response.members);
         } else {
           $("#results").html("<p>No results found.</p>");
         }
       },
-
       error: function () {
         $("#results").html("<p>Server error. Please try again.</p>");
       },
