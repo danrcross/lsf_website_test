@@ -149,6 +149,31 @@ $(document).ready(function () {
 
             // Loop through fields in each group
             fields.forEach((field) => {
+              if (
+                field === "LSF_Number" &&
+                typeof filterOptions[field] === "object" &&
+                filterOptions[field].type === "range"
+              ) {
+                let { min, max } = filterOptions[field];
+
+                filterHtml += `
+    <div class="filt-item">
+      <label>LSF Number:</label>
+      <input type="number" id="filt-LSF_Number" placeholder="Exact LSF Number" />
+      <div class="range-wrapper">
+        <input type="range" id="rangeMin-LSF_Number" min="${min}" max="${max}" value="${min}" />
+        <input type="range" id="rangeMax-LSF_Number" min="${min}" max="${max}" value="${max}" />
+        <div class="range-values">
+          <span>From: <span id="rangeMinVal">${min}</span></span>
+          <span>To: <span id="rangeMaxVal">${max}</span></span>
+        </div>
+      </div>
+    </div>
+  `;
+
+                return; // Skip default rendering for this field
+              }
+
               if (filterOptions[field]) {
                 if (Array.isArray(filterOptions[field])) {
                   // Dropdown menu
@@ -199,6 +224,14 @@ $(document).ready(function () {
                     </div>
                 `);
         }
+        // Update displayed values when range sliders change
+        $(document).on("input", "#rangeMin-LSF_Number", function () {
+          $("#rangeMinVal").text($(this).val());
+        });
+
+        $(document).on("input", "#rangeMax-LSF_Number", function () {
+          $("#rangeMaxVal").text($(this).val());
+        });
       },
       error: function (xhr, status, error) {
         console.error("AJAX error:", error);
@@ -216,6 +249,25 @@ $(document).ready(function () {
       arrow.text(filterItems.is(":visible") ? "▲" : "▼");
     });
   });
+
+  function fetchTotalMemberCount() {
+    $.ajax({
+      url: "queries/get_member_count.php",
+      type: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.status === "success") {
+          $("#limitInput").val(response.total);
+          myQuery.limit = response.total;
+        } else {
+          console.error("Failed to fetch member count:", response.message);
+        }
+      },
+      error: function (xhr, status, error) {
+        console.error("AJAX error fetching total count:", error);
+      },
+    });
+  }
 
   function fetchAddMemberFields() {
     $.ajax({
@@ -354,12 +406,22 @@ $(document).ready(function () {
   // Collect filter values from UI
   function getFilterValues() {
     let filterVals = {};
+    // Special case: LSF Number
+    let exactLSF = $("#filt-LSF_Number").val().trim();
+    let rangeMin = $("#rangeMin-LSF_Number").val();
+    let rangeMax = $("#rangeMax-LSF_Number").val();
+
+    if (exactLSF) {
+      filterVals["LSF_Number"] = exactLSF; // Prioritize exact match
+    } else if (rangeMin && rangeMax && rangeMin !== rangeMax) {
+      filterVals["LSF_Number_range"] = { min: rangeMin, max: rangeMax };
+    }
 
     // Collect search inputs
     $("input[id^='filt-']").each(function () {
       let key = $(this).attr("id").replace("filt-", "");
       let value = $(this).val().trim();
-      if (value) {
+      if (key !== "LSF_Number" && !filterVals[key] && value) {
         filterVals[key] = value;
       }
     });
@@ -759,6 +821,10 @@ $(document).ready(function () {
           createPages(response.members);
           updatePage();
           renderSort(response.members);
+
+          // Display results count
+          let countMessage = `<p class="results-count">This search returned <strong>${response.members.length}</strong> results.</p>`;
+          $("#resCount").html(countMessage);
         } else {
           $("#results").html("<p>No results found.</p>");
         }
@@ -876,4 +942,5 @@ $(document).ready(function () {
   fetchFilters();
   fetchAddMemberFields();
   addMember();
+  fetchTotalMemberCount();
 });

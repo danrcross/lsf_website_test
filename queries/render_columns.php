@@ -13,9 +13,11 @@ try {
         "AMA Number" => ["AMA_Number"],
         "Name" => ["First_Name", "Last_Name"],
         "Location" => ["Address", "City", "State", "Zip", "Country", "Country_Coordinator"],
-        "SAP Data" => ["SAP_Aspirant", "SAP_Level_1", "SAP_Level_2", "SAP_Level_3", "SAP_Level_4", "SAP_Level_5", "SAP_Level"],
-        "eSAP Data" => ["eSAP_Aspirant", "eSAP_Level_1", "eSAP_Level_2", "eSAP_Level_3", "eSAP_Level_4", "eSAP_Level_5", "eSAP_Level"],
-        "Miscellaneous" => ["Miscellaneous", "Deceased", "Duplicate"]
+        "Miscellaneous" => ["Miscellaneous", "Deceased", "Duplicate"],
+        "SAP Level" => ["SAP_Level"],
+        "eSAP Level" => ["eSAP_Level"],
+        "SAP Dates" => ["SAP_Aspirant", "SAP_Level_1", "SAP_Level_2", "SAP_Level_3", "SAP_Level_4", "SAP_Level_5"],
+        "eSAP Dates" => ["eSAP_Aspirant", "eSAP_Level_1", "eSAP_Level_2", "eSAP_Level_3", "eSAP_Level_4", "eSAP_Level_5"],
     ];
 
     echo json_encode(["status" => "success", "columnGroups" => $columnGroups]);

@@ -32,7 +32,19 @@ h1 {
   border-radius: 5px;
   cursor: pointer;
 }
+#searchBtn {
+  margin-bottom: 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
+#resCount {
+  font-style: italic;
+}
 /* Checkbox Layout */
 .checkbox-item {
   display: flex;
