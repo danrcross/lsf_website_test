@@ -20,7 +20,7 @@ $(document).ready(function () {
     perPage: 10,
     page: 1,
   };
-  // Fetch and render columns dynamically
+
   // Fetch and render columns dynamically
   function fetchColumns() {
     $.ajax({
@@ -168,10 +168,13 @@ $(document).ready(function () {
           <span>To: <span id="rangeMaxVal">${max}</span></span>
         </div>
       </div>
+      <div class="apply-range-checkbox">
+        <input type="checkbox" id="applyLSFRange" />
+        <label for="applyLSFRange">Apply LSF Range Filter</label>
+      </div>
     </div>
   `;
-
-                return; // Skip default rendering for this field
+                return; // Skip default rendering for LSF_Number field
               }
 
               if (filterOptions[field]) {
@@ -239,7 +242,6 @@ $(document).ready(function () {
     });
   }
 
-  // Handle collapsible filter groups
   // Handle collapsible filter groups with arrow indicators
   $(document).on("click", ".filter-group legend", function () {
     let filterItems = $(this).next(".filter-items");
@@ -335,11 +337,18 @@ $(document).ready(function () {
               let fieldData = fields.find((f) => f.name === field);
               if (!fieldData) return;
 
-              let label = fieldData.name.replace(/_/g, " "); // Clean column names
+              let label = fieldData.name.replace(/_/g, " ");
               let fieldInput = "";
 
-              if (["Deceased", "Duplicate"].includes(fieldData.name)) {
-                // Yes/No dropdowns
+              // For LSF_Number, add the "Use Next LSF #" button
+              if (fieldData.name === "LSF_Number") {
+                fieldInput = `
+                  <div class="lsf-input-wrapper">
+                    <input type="number" id="${fieldData.name}" name="${fieldData.name}">
+                    <button type="button" class="get-next-lsf-btn">Use Next LSF #</button>
+                  </div>
+                `;
+              } else if (["Deceased", "Duplicate"].includes(fieldData.name)) {
                 fieldInput = `
                                 <select id="${fieldData.name}" name="${fieldData.name}">
                                     <option value="">Select</option>
@@ -350,13 +359,10 @@ $(document).ready(function () {
                 fieldData.type.includes("varchar") ||
                 fieldData.type.includes("text")
               ) {
-                // Text input
                 fieldInput = `<input type="text" id="${fieldData.name}" name="${fieldData.name}">`;
               } else if (fieldData.type.includes("int")) {
-                // Number input
                 fieldInput = `<input type="number" id="${fieldData.name}" name="${fieldData.name}">`;
               } else if (fieldData.type.includes("date")) {
-                // Date picker
                 fieldInput = `<input type="date" id="${fieldData.name}" name="${fieldData.name}">`;
               }
 
@@ -368,7 +374,7 @@ $(document).ready(function () {
                         `;
             });
 
-            fieldHtml += `</div></fieldset>`; // Close fieldset
+            fieldHtml += `</div></fieldset>`;
             formContainer.append(fieldHtml);
           });
 
@@ -396,28 +402,38 @@ $(document).ready(function () {
 
   // Handle the "Reset Filters" button click
   $(document).on("click", "#resetFilters", function () {
-    // Clear all text inputs
+    // Clear all text inputs in filters
     $("input[id^='filt-']").val("");
-
-    // Reset all dropdowns to "All"
+    // Reset all dropdowns in filters to "All"
     $("select[id^='filt-']").val("All");
+    // Uncheck the LSF Range checkbox and reset the range sliders to default values
+    $("#applyLSFRange").prop("checked", false);
+    let lsfMinInput = $("#rangeMin-LSF_Number");
+    let lsfMaxInput = $("#rangeMax-LSF_Number");
+    if (lsfMinInput.length && lsfMaxInput.length) {
+      let defaultMin = lsfMinInput.attr("min");
+      let defaultMax = lsfMaxInput.attr("max");
+      lsfMinInput.val(defaultMin);
+      lsfMaxInput.val(defaultMax);
+      $("#rangeMinVal").text(defaultMin);
+      $("#rangeMaxVal").text(defaultMax);
+    }
   });
 
-  // Collect filter values from UI
   function getFilterValues() {
     let filterVals = {};
     // Special case: LSF Number
     let exactLSF = $("#filt-LSF_Number").val().trim();
     let rangeMin = $("#rangeMin-LSF_Number").val();
     let rangeMax = $("#rangeMax-LSF_Number").val();
+    let applyRange = $("#applyLSFRange").is(":checked");
 
     if (exactLSF) {
-      filterVals["LSF_Number"] = exactLSF; // Prioritize exact match
-    } else if (rangeMin && rangeMax && rangeMin !== rangeMax) {
+      filterVals["LSF_Number"] = exactLSF;
+    } else if (applyRange && rangeMin && rangeMax && rangeMin !== rangeMax) {
       filterVals["LSF_Number_range"] = { min: rangeMin, max: rangeMax };
     }
 
-    // Collect search inputs
     $("input[id^='filt-']").each(function () {
       let key = $(this).attr("id").replace("filt-", "");
       let value = $(this).val().trim();
@@ -426,16 +442,15 @@ $(document).ready(function () {
       }
     });
 
-    // Collect dropdown values
     $("select[id^='filt-']").each(function () {
       let key = $(this).attr("id").replace("filt-", "");
       let value = $(this).val();
 
       if (key === "Deceased" || key === "Duplicate") {
         if (value === "Yes") {
-          filterVals[key] = "1"; // Store as 1
+          filterVals[key] = "1";
         } else if (value === "No") {
-          filterVals[key] = "0"; // Store as 0, to be converted to 0 or NULL in SQL
+          filterVals[key] = "0";
         }
       } else if (value !== "All") {
         filterVals[key] = value;
@@ -453,12 +468,14 @@ $(document).ready(function () {
     sortContainer.append(`
                 <label for="sort">Sort by:</label>
                   <select id="sort">
-                    ${columns.map((column) => {
-                      return `<option value="${column}">${column.replace(
-                        /_/g,
-                        " "
-                      )}</option>`;
-                    })}
+                    ${columns
+                      .map((column) => {
+                        return `<option value="${column}">${column.replace(
+                          /_/g,
+                          " "
+                        )}</option>`;
+                      })
+                      .join("")}
                   </select>
                   <select id="order">
                     <option value="ASC">Ascending</option>
@@ -467,65 +484,59 @@ $(document).ready(function () {
                   <button id="sortBtn">Sort</button>
             `);
   }
-  // Handle sort options: stores the selected sort column and order into the myQuery object
+
   $(document).on("change", "#sort, #order", function () {
     myQuery.sortColumn = $("#sort").val();
     myQuery.sortOrder = $("#order").val();
   });
-  // Render members in a table, along with edit, save, and delete buttons
+
+  // Render members in a table, along with edit, save, delete, and verify buttons
   function renderMembers(members) {
-    const nonEditableColumns = ["SAP_Level", "eSAP_Level"]; // Define columns that shouldn't be edited
+    const nonEditableColumns = ["SAP_Level", "eSAP_Level"];
 
     let output = `
     <div class="table-container">
       <table>
         <thead>
           <tr>
-            <th>Actions</th> <!-- Move Actions column to the left -->
-  `;
-
+            <th>Actions</th>
+    `;
     let columns = Object.keys(members.length ? members[0] : {});
 
-    // Table headers
     columns.forEach((column) => {
       output += `<th>${column.replace(/_/g, " ")}</th>`;
     });
 
     output += `</tr></thead><tbody class="scrollable-tbody">`;
 
-    // Table rows
     members.forEach((member, index) => {
       output += `<tr data-index="${index}">`;
-
-      // Action buttons (Now appearing first)
       output += `
       <td>
         <button class="edit-btn" data-index="${index}">Edit</button>
         <button class="save-btn" data-index="${index}" style="display: none;">Save</button>
         <button class="delete-btn" data-index="${index}">Delete</button>
+        <button class="verify-btn" data-index="${index}">Verify Address</button>
       </td>
     `;
-
-      // Table Data Cells
       columns.forEach((column) => {
         if (column === "id") {
-          output += `<td>${member[column]}</td>`; // ID remains static
+          output += `<td>${member[column]}</td>`;
         } else if (nonEditableColumns.includes(column)) {
-          output += `<td>${member[column] ?? ""}</td>`; // Non-editable columns remain as text
+          output += `<td>${member[column] ?? ""}</td>`;
         } else {
           output += `<td class="editable" data-column="${column}">${
             member[column] ?? ""
-          }</td>`; // Editable columns
+          }</td>`;
         }
       });
-
       output += `</tr>`;
     });
 
     output += `</tbody></table></div>`;
-
     $("#results").html(output);
   }
+
   // Edit Button Event Handler
   $(document).on("click", ".edit-btn", function () {
     let rowIndex = $(this).data("index");
@@ -534,23 +545,17 @@ $(document).ready(function () {
     let editBtn = row.find(".edit-btn");
 
     if ($(this).text() === "Edit") {
-      // Change editable fields to input boxes
       row.find(".editable").each(function () {
         let text = $(this).text();
         $(this).html(`<input type="text" value="${text}">`);
       });
-
-      // Show Save button and change Edit to Cancel
       saveBtn.show();
       editBtn.text("Cancel");
     } else {
-      // Cancel action: restore original values
       row.find(".editable").each(function () {
         let text = $(this).find("input").val();
         $(this).text(text);
       });
-
-      // Hide Save button and revert Edit button
       saveBtn.hide();
       editBtn.text("Edit");
     }
@@ -561,7 +566,7 @@ $(document).ready(function () {
     let rowIndex = $(this).data("index");
     let row = $(`tr[data-index="${rowIndex}"]`);
     let editBtn = row.find(".edit-btn");
-    let memberId = row.find("td:nth-child(2)").text().trim(); // Ensure correct ID
+    let memberId = row.find("td:nth-child(2)").text().trim();
 
     if (!memberId) {
       alert("Error: Member ID is missing.");
@@ -572,8 +577,6 @@ $(document).ready(function () {
     if (!confirmSave) return;
 
     let rowData = {};
-
-    // Collect new values
     row.find(".editable").each(function () {
       let columnName = $(this).data("column");
       let newValue = $(this).find("input").val() || $(this).text().trim();
@@ -588,37 +591,26 @@ $(document).ready(function () {
       success: function (response) {
         if (response.success) {
           console.log("Update successful:", response.message);
-
-          //  Update local storage with new values
           let paginatedData = JSON.parse(
             localStorage.getItem("paginatedMembers")
           );
           if (paginatedData) {
-            // Find and update the correct member entry
             Object.keys(paginatedData.pages).forEach((page) => {
               paginatedData.pages[page] = paginatedData.pages[page].map(
                 (member) =>
                   member.id == memberId ? { ...member, ...rowData } : member
               );
             });
-
-            // Update local storage
             localStorage.setItem(
               "paginatedMembers",
               JSON.stringify(paginatedData)
             );
-
-            //  Refresh the page to show updates
             updatePage();
           }
-
-          // Restore row to normal view mode
           row.find(".editable").each(function () {
             let columnName = $(this).data("column");
-            $(this).text(rowData[columnName]); // Replace input field with text
+            $(this).text(rowData[columnName]);
           });
-
-          // Hide Save button and reset Edit button
           row.find(".save-btn").hide();
           editBtn.text("Edit");
         } else {
@@ -635,8 +627,8 @@ $(document).ready(function () {
 
   // Delete Button Event Handler
   $(document).on("click", ".delete-btn", function () {
-    let row = $(this).closest("tr"); // Get the row to delete
-    let memberId = row.find("td:nth-child(2)").text().trim(); // Get member ID (assuming it's in the second column)
+    let row = $(this).closest("tr");
+    let memberId = row.find("td:nth-child(2)").text().trim();
 
     if (!memberId) {
       alert("Error: Member ID is missing.");
@@ -654,24 +646,16 @@ $(document).ready(function () {
       success: function (response) {
         if (response.success) {
           console.log("Delete successful:", response.message);
-
-          // Remove the row from the UI immediately
           row.remove();
-
-          // Find and remove the member from paginatedData
           Object.keys(paginatedData.pages).forEach((page) => {
             paginatedData.pages[page] = paginatedData.pages[page].filter(
               (member) => member.id != memberId
             );
           });
-
-          // Recalculate pagination to reflect the removed row
           paginatedData.totalResults--;
           paginatedData.totalPages = Math.ceil(
             paginatedData.totalResults / paginatedData.perPage
           );
-
-          // Update the UI
           updatePage();
         } else {
           console.error("Delete failed:", response.message);
@@ -685,11 +669,69 @@ $(document).ready(function () {
     });
   });
 
+  // Verify Address Button Event Handler
+  $(document).on("click", ".verify-btn", function () {
+    const rowIndex = $(this).data("index");
+    const row = $(`tr[data-index="${rowIndex}"]`);
+
+    const address = row.find("td[data-column='Address']").text().trim();
+    const city = row.find("td[data-column='City']").text().trim();
+    const state = row.find("td[data-column='State']").text().trim();
+    const zip = row.find("td[data-column='Zip']").text().trim();
+    const country = row.find("td[data-column='Country']").text().trim();
+
+    const fullAddress = `${address}, ${city}, ${state} ${zip}, ${country}`;
+    const apiKey = "AIzaSyARUf-vDFQL2PCsWoTmTE_4gXbEIyf2VEk"; // Replace with your API key
+
+    if (!address) {
+      alert("No address found for this member.");
+      return;
+    }
+
+    $.ajax({
+      url: "https://maps.googleapis.com/maps/api/geocode/json",
+      method: "GET",
+      data: {
+        address: fullAddress,
+        key: apiKey,
+      },
+      success: function (res) {
+        if (res.status === "OK" && res.results.length > 0) {
+          const formatted = res.results[0].formatted_address;
+          alert(`✅ Address is valid:\n\n${formatted}`);
+        } else {
+          alert("❌ Address not found. Please review this entry.");
+        }
+      },
+      error: function () {
+        alert("⚠️ Failed to contact Google Maps API.");
+      },
+    });
+  });
+
+  // Handler for "Use Next LSF #" button on the Add Member form
+  $(document).on("click", ".get-next-lsf-btn", function () {
+    $.ajax({
+      url: "queries/get_next_lsf.php",
+      type: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.success) {
+          $("#LSF_Number").val(response.nextLSF);
+        } else {
+          alert("Error: " + response.message);
+        }
+      },
+      error: function () {
+        alert("Failed to fetch next LSF number.");
+      },
+    });
+  });
+
   function addMember() {
     $("#addMemberForm").submit(function (event) {
-      event.preventDefault(); // Prevent default form submission
+      event.preventDefault();
 
-      // Collect form data
       let formData = {};
       $("#addMemberForm")
         .find("input, select")
@@ -697,18 +739,13 @@ $(document).ready(function () {
           let key = $(this).attr("name");
           let value = $(this).val();
 
-          // Convert empty values to null
           if (value === "") value = null;
-
-          // Convert boolean fields to integers (Yes=1, No=0)
           if (key === "Deceased" || key === "Duplicate") {
             value = value === "1" ? 1 : 0;
           }
-
           formData[key] = value;
         });
 
-      // Send AJAX request
       $.ajax({
         url: "queries/add.php",
         type: "POST",
@@ -718,7 +755,7 @@ $(document).ready(function () {
         success: function (response) {
           if (response.success) {
             alert("Member added successfully!");
-            $("#addMemberForm")[0].reset(); // Reset form
+            $("#addMemberForm")[0].reset();
           } else {
             alert("Error: " + response.message);
           }
@@ -780,7 +817,6 @@ $(document).ready(function () {
     $("#pagination").html(paginationHTML);
   }
 
-  // Update the page with new data, based on the current page number
   function updatePage() {
     if (!paginatedData.pages) return;
 
@@ -790,13 +826,10 @@ $(document).ready(function () {
     renderPagination();
   }
 
-  // Handle the search button click
   $("#searchBtn").click(function () {
-    updateSelectedColumns(); // Ensure selected columns are updated
-
-    // Update myQuery object
+    updateSelectedColumns();
     myQuery = {
-      columns: myQuery.columns, // Use the updated column selection
+      columns: myQuery.columns,
       filters: getFilterValues(),
       limit: $("#limitInput").val(),
       perPage: $("#perPageInput").val(),
@@ -822,7 +855,6 @@ $(document).ready(function () {
           updatePage();
           renderSort(response.members);
 
-          // Display results count
           let countMessage = `<p class="results-count">This search returned <strong>${response.members.length}</strong> results.</p>`;
           $("#resCount").html(countMessage);
         } else {
@@ -835,7 +867,6 @@ $(document).ready(function () {
     });
   });
 
-  // Handle pagination button clicks
   $(document).on("click", "#prevPage", function () {
     if (myQuery.page > 1) {
       myQuery.page--;
@@ -855,55 +886,23 @@ $(document).ready(function () {
     updatePage();
   });
 
-  // function not used
-  // function sortData({ limit, columns, filters, sortColumn, sortOrder }) {
-  //   $.ajax({
-  //     url: "query.php",
-  //     type: "POST",
-  //     data: {
-  //       limit,
-  //       columns,
-  //       filterVals: filters,
-  //       sortColumn,
-  //       sortOrder,
-  //     },
-  //     dataType: "json",
-  //     success: function (response) {
-  //       if (response.status === "success" && response.members.length > 0) {
-  //         createPages(response.members);
-  //         myQuery.page = 1; // Reset to page 1 on new search
-  //         updatePage(); // Load first page and pagination controls
-  //       } else {
-  //         $("#results").html("<p>No results found.</p>");
-  //       }
-  //     },
-  //     error: function () {
-  //       $("#results").html("<p>Server error. Please try again.</p>");
-  //     },
-  //   });
-  // }
-
   $(document).on("click", "#sortBtn", function () {
     if (!paginatedData || !paginatedData.pages) {
       console.error("No data available for sorting.");
       return;
     }
 
-    let allMembers = Object.values(paginatedData.pages).flat(); // Flatten all pages into a single array
+    let allMembers = Object.values(paginatedData.pages).flat();
     let sortColumn = $("#sort").val();
     let sortOrder = $("#order").val();
 
-    //  Perform Sorting
     allMembers.sort((a, b) => {
       let valA = a[sortColumn] || "";
       let valB = b[sortColumn] || "";
-
       if (!isNaN(valA) && !isNaN(valB)) {
-        // Numeric Sorting
         valA = Number(valA);
         valB = Number(valB);
       }
-
       if (sortOrder === "ASC") {
         return valA > valB ? 1 : valA < valB ? -1 : 0;
       } else {
@@ -911,7 +910,6 @@ $(document).ready(function () {
       }
     });
 
-    //  Redistribute members back into paginated structure
     let perPage = paginatedData.perPage;
     let totalPages = Math.ceil(allMembers.length / perPage);
 
@@ -930,11 +928,26 @@ $(document).ready(function () {
       );
     }
 
-    // Save sorted data in localStorage
     paginatedData = sortedPaginatedData;
-
-    // Refresh the current page to reflect sorting
     updatePage();
+  });
+
+  $(document).on("click", ".get-next-lsf-btn", function () {
+    $.ajax({
+      url: "queries/get_next_lsf.php",
+      type: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.success) {
+          $("#LSF_Number").val(response.nextLSF);
+        } else {
+          alert("Error: " + response.message);
+        }
+      },
+      error: function () {
+        alert("Failed to fetch next LSF number.");
+      },
+    });
   });
 
   // Fetch columns and filters on page load
