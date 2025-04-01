@@ -36,20 +36,32 @@ $sql = "SELECT $columns_sql FROM members WHERE 1=1";
 $params = [];
 
 // Handle filters
+// Handle filters
 if (!empty($filter_values) && is_array($filter_values)) {
     foreach ($filter_values as $key => $value) {
-        if ($value !== "All" && $value !== null && $value !== "") {  
+        if ($value !== "All" && $value !== null && $value !== "") {
+
+            // ✅ NEW: Range-based LSF_Number
+           if ($key === 'LSF_Number_range' && is_array($value)) {
+    $sql .= " AND LSF_Number BETWEEN :lsf_min AND :lsf_max";
+    $params[':lsf_min'] = (int)$value['min'];
+    $params[':lsf_max'] = (int)$value['max'];
+    continue; // Skip default handling
+}
+
+            // existing cases...
             switch ($key) {
-                // Numeric Exact Match (IDs)
                 case 'id':
                 case 'LSF_Number':
+    $sql .= " AND CAST(LSF_Number AS UNSIGNED) = :$key";
+    $params[":$key"] = (int)$value;
+    break;
                 case 'Zip':
                 case 'AMA_Number':
                     $sql .= " AND $key = :$key";
                     $params[":$key"] = (int) $value;
                     break;
 
-                // Dropdown Exact Match
                 case 'State':
                 case 'Country':
                 case 'Country_Coordinator':
@@ -59,24 +71,21 @@ if (!empty($filter_values) && is_array($filter_values)) {
                     $params[":$key"] = $value;
                     break;
 
-                // Binary Yes/No (0 or NULL treated equally)
                 case 'Deceased':
                 case 'Duplicate':
                     if ($value === "1") {
-                        $sql .= " AND $key = 1"; // Yes → 1
+                        $sql .= " AND $key = 1";
                     } elseif ($value === "0") {
-                        $sql .= " AND ($key = 0 OR $key IS NULL)"; // No → 0 or NULL
+                        $sql .= " AND ($key = 0 OR $key IS NULL)";
                     }
                     break;
 
-                // Dates: Exact Match
                 case 'SAP_Aspirant':
                 case 'eSAP_Aspirant':
                     $sql .= " AND $key = :$key";
                     $params[":$key"] = $value;
                     break;
 
-                // General Search (LIKE for partial matches)
                 case 'First_Name':
                 case 'Last_Name':
                 case 'Address':
@@ -90,6 +99,7 @@ if (!empty($filter_values) && is_array($filter_values)) {
         }
     }
 }
+
 
 // Validate and apply sorting
 if (in_array($sortColumn, $allowed_columns)) {

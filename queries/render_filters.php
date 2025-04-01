@@ -31,16 +31,22 @@ try {
     $filterOptions = [];
 
     foreach ($filters as $key => $column) {
-        if (in_array($column, ["State", "Country", "Country_Coordinator", "SAP_Level", "eSAP_Level"])) {
+       if ($column === "LSF_Number") {
+    // Add range metadata for LSF_Number
+    $stmt = $conn->query("SELECT MIN(CAST(LSF_Number AS UNSIGNED)) AS minVal, MAX(CAST(LSF_Number AS UNSIGNED)) AS maxVal FROM members WHERE LSF_Number IS NOT NULL AND LSF_Number != ''");
+    $range = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $filterOptions[$key] = [
+        "type" => "range",
+        "min" => (int) $range['minVal'],
+        "max" => (int) $range['maxVal'],
+    ];
+        } elseif (in_array($column, ["State", "Country", "Country_Coordinator", "SAP_Level", "eSAP_Level"])) {
             // Dropdown filters (get distinct values)
             $stmt = $conn->prepare("SELECT DISTINCT $column FROM members WHERE $column IS NOT NULL ORDER BY $column ASC");
-            // executes statment
             $stmt->execute();
-            // fetches all rows
             $values = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            // adds "All" option to the beginning of the array
             array_unshift($values, "All");
-            // sets the key to the values
             $filterOptions[$key] = $values;
         } elseif (in_array($column, ["SAP_Aspirant", "eSAP_Aspirant", "Deceased", "Duplicate"])) {
             // Yes/No dropdowns
