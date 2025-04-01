@@ -499,12 +499,13 @@ $(document).ready(function () {
 
       // Action buttons (Now appearing first)
       output += `
-      <td>
-        <button class="edit-btn" data-index="${index}">Edit</button>
-        <button class="save-btn" data-index="${index}" style="display: none;">Save</button>
-        <button class="delete-btn" data-index="${index}">Delete</button>
-      </td>
-    `;
+  <td>
+    <button class="edit-btn" data-index="${index}">Edit</button>
+    <button class="save-btn" data-index="${index}" style="display: none;">Save</button>
+    <button class="delete-btn" data-index="${index}">Delete</button>
+    <button class="verify-btn" data-index="${index}">Verify Address</button>
+  </td>
+`;
 
       // Table Data Cells
       columns.forEach((column) => {
@@ -681,6 +682,45 @@ $(document).ready(function () {
       error: function (xhr, status, error) {
         console.error("AJAX error:", error);
         alert("Failed to delete member. Please try again.");
+      },
+    });
+  });
+
+  $(document).on("click", ".verify-btn", function () {
+    const rowIndex = $(this).data("index");
+    const row = $(`tr[data-index="${rowIndex}"]`);
+
+    const address = row.find("td[data-column='Address']").text().trim();
+    const city = row.find("td[data-column='City']").text().trim();
+    const state = row.find("td[data-column='State']").text().trim();
+    const zip = row.find("td[data-column='Zip']").text().trim();
+    const country = row.find("td[data-column='Country']").text().trim();
+
+    const fullAddress = `${address}, ${city}, ${state} ${zip}, ${country}`;
+    const apiKey = "AIzaSyARUf-vDFQL2PCsWoTmTE_4gXbEIyf2VEk"; // Replace this
+
+    if (!address) {
+      alert("No address found for this member.");
+      return;
+    }
+
+    $.ajax({
+      url: "https://maps.googleapis.com/maps/api/geocode/json",
+      method: "GET",
+      data: {
+        address: fullAddress,
+        key: apiKey,
+      },
+      success: function (res) {
+        if (res.status === "OK" && res.results.length > 0) {
+          const formatted = res.results[0].formatted_address;
+          alert(`✅ Address is valid:\n\n${formatted}`);
+        } else {
+          alert("❌ Address not found. Please review this entry.");
+        }
+      },
+      error: function () {
+        alert("⚠️ Failed to contact Google Maps API.");
       },
     });
   });
