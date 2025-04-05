@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LSF Events</title>
+  <link href="site.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <script>
+    var countDownDate = new Date("Jul 12, 2023 08:00:00").getTime();
+    var x = setInterval(function()
+    {
+      var now = new Date().getTime();
+      var distance = countDownDate-now;
+      var days = Math.floor(distance/(1000*60*60*24));
+      var hours = Math.floor((distance%(1000*60*60*24))/(1000*60*60));
+      var minutes = Math.floor((distance%(1000*60*60))/(1000*60));
+      var seconds = Math.floor((distance%(1000*60))/1000);
+      document.getElementById("demo").innerHTML = "The 2023 Nats starts in " + days + "d " + hours + "h " + minutes + "m " + seconds + "s!";
+      if(distance < 0) { document.getElementById("demo").innerHTML = "Get to Muncie!  Enjoy the 2023 NATS!"; }
+      if(distance < -(1000*60*60*24*11.3333)) { clearInterval(x); document.getElementById("demo").innerHTML = "Waiting for 2024 NATS date announcement!"; }
+    }, 1000);
+  </script>
+  <h1>2023 Nats<img src="images/LSFLogo_small.gif" alt="" style="float:right"></h1>
+  <p>Here it is folks.  After much thought we think we have come up with a good schedule:</p>
+  <table class="calendar_text"><tbody>
+  <tr><td>Date</td><td>Location</td><td>Contest Director</td><td>Entry fee</td></tr>
+  <tr><td>July 12-14 (Wed-Fri)</td><td>F3H/XC @ Monroe Central School</td><td>Wally 'by Golly' Adasczik</td><td>$0.00</td></tr>
+  <tr><td>July 14-15 (Fri-Sat)</td><td>F3RES @ AMA Site 5</td><td>Jonathan Garber</td><td>$20.00</td></tr>
+  <tr><td>July 16-17 (Sun-Mon)</td><td>444 Unlimited @ AMA Site 5</td><td>Wally 'by Golly' Adasczik</td><td>$20.00</td></tr>
+  <tr><td>July 18-19 (Tue-Wed)</td><td>463 ALES @ AMA Site 5</td><td>Norm Poti</td><td>$20.00</td></tr>
+  <tr><td>July 18-19 (Tue-Wed)</td><td>462 F3K @ AMA Site 4</td><td>Jonathan Garber</td><td>$20.00</td></tr>
+  <tr><td>July 20-21 (Thur-Fri)</td><td>464 F5J @ AMA Site 5</td><td>Jim McCarthy</td><td>$30.00 ($10.00 F5J USA Team donation included)</td></tr>
+  <tr><td>July 22-23 (Sat-Sun)</td><td>GPS Racing @ AMA Site 5</td><td>John Marien</td><td>$20.00</td></tr>
+  <tr><td>July 22-23 (Sat-Sun)</td><td>"The Trifecta" @ AMA Site 4</td><td>Jonathan Garber</td><td>$20.00 per class</td></tr>
+  </tbody></table>
+  <p style="font:18px arial,sans-serif;"><img src="images/rcgroups-icon-75px.png">Follow the latest NATS news on RC Groups <a href="https://www.rcgroups.com/forums/showthread.php?4236927-Nats-2023" target="_blank">here</a>.  Time to get excited...<p id="demo" style="font:24px arial,sans-serif; text-align:center;"></p></p>
+</body>
+</html>

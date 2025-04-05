@@ -839,7 +839,7 @@ $(document).ready(function () {
     };
 
     $.ajax({
-      url: "query.php",
+      url: "queries/query.php",
       type: "POST",
       data: {
         limit: myQuery.limit,
