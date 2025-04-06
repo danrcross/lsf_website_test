@@ -1,26 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>2023 LSF Member Upgrades</title>
-  <link href="site.css" rel="stylesheet" type="text/css">
-</head>
-<body>
-  <h1><div class="btn-blue" style="float:left"><button onclick="document.location='2022upgrade.htm'">Previous Year</button></div>2023 Upgrades</h1>
-  <p><strong>CONGRATULATIONS TO THE FOLLOWING PILOTS FOR ADVANCING IN THE ELECTRIC LAUNCH eLSF</strong></p>
-  <table class="calendar_text"><tbody>
-    <tr><td>LSF #</td><td>NAME</td><td>STATE</td><td>COUNTRY</td><td>LEVEL</td></tr>
-    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
-  </tbody></table>
-  <br>
-  <hr>
-  <br>
-  <p><strong>CONGRATULATIONS TO THE FOLLOWING PILOTS FOR ADVANCING IN THE STANDARD LAUNCH LSF</strong></p>
-  <table class="calendar_text"><tbody>
-    <tr><td>LSF #</td><td>NAME</td><td>STATE</td><td>COUNTRY</td><td>LEVEL</td></tr>
-    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
-    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
-  </tbody></table>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>2023 LSF Member Upgrades</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+    <script src="assets/js/23upgrade.js"></script>
+    <link href="site.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1>
+      <div class="btn-blue" style="float: left">
+        <button onclick="document.location='2022upgrade.htm'">
+          Previous Year
+        </button>
+      </div>
+      2023 Upgrades
+      <div class="btn-blue" style="float: right">
+        <button onclick="document.location='2024upgrade.htm'">Next Year</button>
+      </div>
+    </h1>
+    <p>
+      <strong
+        >CONGRATULATIONS TO THE FOLLOWING PILOTS FOR ADVANCING IN THE ELECTRIC
+        LAUNCH eLSF</strong
+      >
+    </p>
+    <table class="calendar_text">
+      <tbody>
+        <tr id="headerESAP23">
+          <td>LSF #</td>
+          <td>NAME</td>
+          <td>STATE</td>
+          <td>COUNTRY</td>
+          <td>LEVEL</td>
+        </tr>
+      </tbody>
+    </table>
+    <br />
+    <hr />
+    <br />
+    <p>
+      <strong
+        >CONGRATULATIONS TO THE FOLLOWING PILOTS FOR ADVANCING IN THE STANDARD
+        LAUNCH LSF</strong
+      >
+    </p>
+    <table class="calendar_text">
+      <tbody>
+        <tr id="headerSAP23">
+          <td>LSF #</td>
+          <td>NAME</td>
+          <td>STATE</td>
+          <td>COUNTRY</td>
+          <td>LEVEL</td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
 </html>
