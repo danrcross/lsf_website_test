@@ -98,147 +98,159 @@ $(document).ready(function () {
       type: "GET",
       dataType: "json",
       success: function (response) {
-        if (response.status === "success") {
-          let filterOptions = response.filterOptions;
-          let filterContainer = $("#fil-sch-ctnr");
+        if (response.status !== "success") {
+          console.error("Error fetching filters:", response.message);
+          return;
+        }
 
-          filterContainer.empty(); // Clear existing filters
+        const filterOptions = response.filterOptions;
+        const filterContainer = $("#fil-sch-ctnr");
+        filterContainer.empty();
 
-          // Define filter groups
-          const filterGroups = {
-            "LSF Number": ["LSF_Number"],
-            "AMA Number": ["AMA_Number"],
-            Name: ["First_Name", "Last_Name"],
-            Location: [
-              "Address",
-              "City",
-              "State",
-              "Zip",
-              "Country",
-              "Country_Coordinator",
-            ],
-            "SAP Data": [
-              "SAP_Aspirant",
-              "SAP_Level_1",
-              "SAP_Level_2",
-              "SAP_Level_3",
-              "SAP_Level_4",
-              "SAP_Level_5",
-              "SAP_Level",
-            ],
-            "eSAP Data": [
-              "eSAP_Aspirant",
-              "eSAP_Level_1",
-              "eSAP_Level_2",
-              "eSAP_Level_3",
-              "eSAP_Level_4",
-              "eSAP_Level_5",
-              "eSAP_Level",
-            ],
-            Miscellaneous: ["Miscellaneous", "Deceased", "Duplicate"],
-          };
+        const filterGroups = {
+          "LSF Number": ["LSF_Number"],
+          "AMA Number": ["AMA_Number"],
+          Name: ["First_Name", "Last_Name"],
+          Location: [
+            "Address",
+            "City",
+            "State",
+            "Zip",
+            "Country",
+            "Country_Coordinator",
+          ],
+          "SAP Data": [
+            "SAP_Aspirant",
+            "SAP_Level_1",
+            "SAP_Level_2",
+            "SAP_Level_3",
+            "SAP_Level_4",
+            "SAP_Level_5",
+            "SAP_Level",
+          ],
+          "eSAP Data": [
+            "eSAP_Aspirant",
+            "eSAP_Level_1",
+            "eSAP_Level_2",
+            "eSAP_Level_3",
+            "eSAP_Level_4",
+            "eSAP_Level_5",
+            "eSAP_Level",
+          ],
+          Miscellaneous: ["Miscellaneous", "Deceased", "Duplicate"],
+        };
 
-          // Loop through filter groups
-          Object.keys(filterGroups).forEach((group) => {
-            let fields = filterGroups[group];
-            let filterHtml = `
-                        <fieldset class="filter-group">
-                            <legend>
-                                ${group}
-                                <span class="toggle-arrow">▼</span>
-                            </legend>
-                            <div class="filter-items">`;
+        Object.keys(filterGroups).forEach((group) => {
+          const fields = filterGroups[group];
+          let html = `
+          <fieldset class="filter-group">
+            <legend>${group} <span class="toggle-arrow">▼</span></legend>
+            <div class="filter-items">
+        `;
 
-            // Loop through fields in each group
-            fields.forEach((field) => {
-              if (
-                field === "LSF_Number" &&
-                typeof filterOptions[field] === "object" &&
-                filterOptions[field].type === "range"
-              ) {
-                let { min, max } = filterOptions[field];
+          fields.forEach((field) => {
+            // 1) Range special-case for LSF_Number
+            if (
+              field === "LSF_Number" &&
+              filterOptions[field]?.type === "range"
+            ) {
+              const { min, max } = filterOptions[field];
+              html += `
+              <div class="filt-item">
+                <label>LSF Number:</label>
+                <input type="number" id="filt-LSF_Number" placeholder="Exact LSF Number" />
+                <div class="range-wrapper">
+                  <input type="range" id="rangeMin-LSF_Number" min="${min}" max="${max}" value="${min}" />
+                  <input type="range" id="rangeMax-LSF_Number" min="${min}" max="${max}" value="${max}" />
+                  <div class="range-values">
+                    <span>From: <span id="rangeMinVal">${min}</span></span>
+                    <span>To: <span id="rangeMaxVal">${max}</span></span>
+                  </div>
+                </div>
+                <div class="apply-range-checkbox">
+                  <input type="checkbox" id="applyLSFRange" />
+                  <label for="applyLSFRange">Apply LSF Range Filter</label>
+                </div>
+              </div>
+            `;
+              return;
+            }
 
-                filterHtml += `
-    <div class="filt-item">
-      <label>LSF Number:</label>
-      <input type="number" id="filt-LSF_Number" placeholder="Exact LSF Number" />
-      <div class="range-wrapper">
-        <input type="range" id="rangeMin-LSF_Number" min="${min}" max="${max}" value="${min}" />
-        <input type="range" id="rangeMax-LSF_Number" min="${min}" max="${max}" value="${max}" />
-        <div class="range-values">
-          <span>From: <span id="rangeMinVal">${min}</span></span>
-          <span>To: <span id="rangeMaxVal">${max}</span></span>
-        </div>
-      </div>
-      <div class="apply-range-checkbox">
-        <input type="checkbox" id="applyLSFRange" />
-        <label for="applyLSFRange">Apply LSF Range Filter</label>
-      </div>
-    </div>
-  `;
-                return; // Skip default rendering for LSF_Number field
-              }
+            const opts = filterOptions[field];
+            if (!opts) return;
 
-              if (filterOptions[field]) {
-                if (Array.isArray(filterOptions[field])) {
-                  // Dropdown menu
-                  let optionsHtml = filterOptions[field]
-                    .map(
-                      (value) => `<option value="${value}">${value}</option>`
-                    )
-                    .join("");
-
-                  filterHtml += `
-                                    <div class="filt-item">
-                                        <label for="filt-${field}">${field.replace(
-                    /_/g,
-                    " "
-                  )}:</label>
-                                        <select id="filt-${field}">
-                                            <option value="">All</option>
-                                            ${optionsHtml}
-                                        </select>
-                                    </div>
-                                `;
-                } else {
-                  // Text input
-                  filterHtml += `
-                                    <div class="filt-item">
-                                        <label for="filt-${field}">${field.replace(
-                    /_/g,
-                    " "
-                  )}:</label>
-                                        <input type="text" id="filt-${field}" placeholder="Search ${field.replace(
-                    /_/g,
-                    " "
-                  )}">
-                                    </div>
-                                `;
-                }
-              }
-            });
-
-            filterHtml += `</div></fieldset>`; // Close fieldset
-            filterContainer.append(filterHtml);
+            // 2) Deceased / Duplicate → True/False dropdown
+            if (field === "Deceased" || field === "Duplicate") {
+              html += `
+              <div class="filt-item">
+                <label for="filt-${field}">${field.replace(/_/g, " ")}:</label>
+                <select id="filt-${field}">
+                  <option value="">All</option>
+                  <option value="1">True</option>
+                  <option value="0">False</option>
+                </select>
+              </div>
+            `;
+            }
+            // 3) Any other array → filter out blank/All + dedupe + render dropdown
+            else if (Array.isArray(opts)) {
+              const unique = [
+                ...new Set(
+                  opts.filter(
+                    (v) =>
+                      v != null && v !== "" && String(v).toLowerCase() !== "all"
+                  )
+                ),
+              ];
+              const optionsHtml = unique
+                .map((v) => `<option value="${v}">${v}</option>`)
+                .join("");
+              html += `
+              <div class="filt-item">
+                <label for="filt-${field}">${field.replace(/_/g, " ")}:</label>
+                <select id="filt-${field}">
+                  <option value="">All</option>
+                  ${optionsHtml}
+                </select>
+              </div>
+            `;
+            }
+            // 4) Fallback → text input
+            else {
+              html += `
+              <div class="filt-item">
+                <label for="filt-${field}">${field.replace(/_/g, " ")}:</label>
+                <input type="text"
+                       id="filt-${field}"
+                       placeholder="Search ${field.replace(/_/g, " ")}" />
+              </div>
+            `;
+            }
           });
 
-          // Add Reset Filters Button
-          filterContainer.append(`
-                    <div class="reset-container">
-                        <button id="resetFilters">Reset Filters</button>
-                    </div>
-                `);
-        }
-        // Update displayed values when range sliders change
+          html += `
+            </div>
+          </fieldset>
+        `;
+          filterContainer.append(html);
+        });
+
+        // Reset button
+        filterContainer.append(`
+        <div class="reset-container">
+          <button id="resetFilters">Reset Filters</button>
+        </div>
+      `);
+
+        // Re-hook range sliders
         $(document).on("input", "#rangeMin-LSF_Number", function () {
           $("#rangeMinVal").text($(this).val());
         });
-
         $(document).on("input", "#rangeMax-LSF_Number", function () {
           $("#rangeMaxVal").text($(this).val());
         });
       },
-      error: function (xhr, status, error) {
+      error(xhr, status, error) {
         console.error("AJAX error:", error);
       },
     });
@@ -625,69 +637,140 @@ $(document).ready(function () {
    * and POST the non-blank values to bulk_edit.php.
    */
   function showBulkEditDialog() {
+    // 1) determine which columns are editable
     const editableCols = myQuery.columns.filter(
       (c) => c !== "id" && c !== "SAP_Level" && c !== "eSAP_Level"
     );
+    // 2) explicitly list your date columns
+    const dateCols = [
+      "Last_Contact",
+      "SAP_Aspirant",
+      "SAP_Level_1",
+      "SAP_Level_2",
+      "SAP_Level_3",
+      "SAP_Level_4",
+      "SAP_Level_5",
+      "eSAP_Aspirant",
+      "eSAP_Level_1",
+      "eSAP_Level_2",
+      "eSAP_Level_3",
+      "eSAP_Level_4",
+      "eSAP_Level_5",
+    ];
+
+    // 3) build the form markup
     let form = '<form id="bulkEditForm">';
     editableCols.forEach((col) => {
-      form += `
-      <div style="margin-bottom:8px">
-        <label>${col.replace(/_/g, " ")}</label><br/>
-        <input type="text" name="${col}"
-               placeholder="(leave blank to skip)"
-               style="width:100%"/>
-      </div>`;
-    });
-    form += "</form>";
+      form += `<div style="margin-bottom:12px">
+      <label for="bulk_${col}">${col.replace(/_/g, " ")}</label><br/>`;
 
-    $("<div>")
-      .html(form)
-      .dialog({
-        modal: true,
-        title: "Bulk Edit",
-        width: 500,
-        buttons: {
-          Save() {
-            const updates = {};
-            $("#bulkEditForm")
-              .serializeArray()
-              .forEach(({ name, value }) => {
-                if (value.trim() !== "") updates[name] = value.trim();
-              });
-            if (!Object.keys(updates).length) {
-              alert("Please enter at least one field to update.");
-              return;
-            }
-            const ids = $(".rowCheckbox:checked")
-              .map((_, el) => $(el).data("id"))
-              .get();
-            $.ajax({
-              url: "queries/bulk_edit.php",
-              method: "POST",
-              data: JSON.stringify({ ids, updates }),
-              contentType: "application/json",
-              dataType: "json",
-              success(resp) {
-                if (resp.success) {
-                  Object.keys(paginatedData.pages).forEach((p) => {
-                    paginatedData.pages[p].forEach((m) => {
-                      if (ids.includes(m.id)) Object.assign(m, updates);
-                    });
-                  });
-                  updatePage();
-                } else {
-                  alert("Error: " + resp.message);
-                }
-              },
+      if (col === "Deceased" || col === "Duplicate") {
+        // true/false dropdown
+        form += `
+        <select id="bulk_${col}" name="${col}" style="width:100%">
+          <option value="">(no change)</option>
+          <option value="1">True</option>
+          <option value="0">False</option>
+        </select>
+      `;
+      } else if (dateCols.includes(col)) {
+        // datepicker text field
+        form += `
+        <input
+          type="text"
+          id="bulk_${col}"
+          name="${col}"
+          class="bulk-datepicker"
+          placeholder="YYYY-MM-DD"
+          style="width:100%;"
+        />
+      `;
+      } else {
+        // plain text
+        form += `
+        <input
+          type="text"
+          id="bulk_${col}"
+          name="${col}"
+          placeholder="(leave blank to skip)"
+          style="width:100%;"
+        />
+      `;
+      }
+
+      form += `</div>`;
+    });
+    form += `</form>`;
+
+    // 4) inject into DOM and wire up datepicker immediately
+    const $dlg = $("<div id='bulkEditDialog'>").html(form).appendTo("body"); // ensure it's in the document
+
+    // *now* initialize all datepicker fields
+    $dlg.find(".bulk-datepicker").datepicker({
+      dateFormat: "yy-mm-dd",
+    });
+
+    // 5) turn it into a dialog
+    $dlg.dialog({
+      modal: true,
+      title: "Bulk Edit",
+      width: 600,
+      buttons: {
+        Save() {
+          // gather non-blank fields
+          const updates = {};
+          $("#bulkEditForm")
+            .serializeArray()
+            .forEach(({ name, value }) => {
+              if (!value.trim()) return;
+              // translate false dropdown to null
+              if (
+                (name === "Deceased" || name === "Duplicate") &&
+                value === "0"
+              ) {
+                updates[name] = null;
+              } else {
+                updates[name] = value.trim();
+              }
             });
-            $(this).dialog("close");
-          },
-          Cancel() {
-            $(this).dialog("close");
-          },
+          if (!Object.keys(updates).length) {
+            alert("Please enter at least one field to update.");
+            return;
+          }
+          // which IDs?
+          const ids = $(".rowCheckbox:checked")
+            .map((_, el) => $(el).data("id"))
+            .get();
+          $.ajax({
+            url: "queries/bulk_edit.php",
+            method: "POST",
+            contentType: "application/json",
+            dataType: "json",
+            data: JSON.stringify({ ids, updates }),
+            success(resp) {
+              if (!resp.success) return alert("Error: " + resp.message);
+              // merge into memory & re-render
+              Object.values(paginatedData.pages).forEach((page) => {
+                page.forEach((m) => {
+                  if (ids.includes(m.id)) Object.assign(m, updates);
+                });
+              });
+              updatePage();
+            },
+          });
+          $dlg.dialog("close");
         },
-      });
+        Cancel() {
+          $dlg.dialog("close");
+        },
+      },
+      close() {
+        // clean up
+        $dlg.dialog("destroy").remove();
+      },
+    });
   }
+
   // master toggle:
   $(document).on("change", "#selectAllRows", function () {
     $(".rowCheckbox").prop("checked", this.checked);
@@ -751,74 +834,6 @@ $(document).ready(function () {
         },
       });
   }
-
-  // show the bulk‐edit UI dialog
-  function showBulkEditDialog() {
-    // build a small form for each editable column
-    const editable = myQuery.columns.filter(
-      (c) => c !== "id" && c !== "SAP_Level" && c !== "eSAP_Level"
-    );
-    let form = '<form id="bulkEditForm">';
-    editable.forEach((col) => {
-      form += `
-      <div style="margin-bottom:8px">
-        <label for="bulk_${col}">${col.replace(/_/g, " ")}</label><br/>
-        <input type="text" id="bulk_${col}" name="${col}" placeholder="(leave blank to skip)" style="width:100%"/>
-      </div>
-    `;
-    });
-    form += "</form>";
-
-    $("#bulkEditDialog")
-      .html(form)
-      .dialog({
-        modal: true,
-        title: "Bulk Edit",
-        width: 500,
-        buttons: {
-          Save() {
-            // collect non‐empty values
-            const updates = {};
-            $("#bulkEditForm")
-              .serializeArray()
-              .forEach(({ name, value }) => {
-                if (value.trim() !== "") updates[name] = value.trim();
-              });
-            if (!Object.keys(updates).length) {
-              alert("Please enter at least one field to update.");
-              return;
-            }
-            const ids = $(".rowCheckbox:checked")
-              .map((_, el) => $(el).data("id"))
-              .get();
-            $.ajax({
-              url: "queries/bulk_edit.php",
-              method: "POST",
-              data: JSON.stringify({ ids, updates }),
-              contentType: "application/json",
-              dataType: "json",
-              success(resp) {
-                if (resp.success) {
-                  // merge into in‐memory and re-render
-                  Object.keys(paginatedData.pages).forEach((p) => {
-                    paginatedData.pages[p].forEach((m) => {
-                      if (ids.includes(m.id)) Object.assign(m, updates);
-                    });
-                  });
-                  updatePage();
-                } else {
-                  alert("Error: " + resp.message);
-                }
-              },
-            });
-            $(this).dialog("close");
-          },
-          Cancel() {
-            $(this).dialog("close");
-          },
-        },
-      });
-  }
   // select‐all checkbox toggles every row
   $(document).on("change", "#selectAllRows", function () {
     $(".rowCheckbox").prop("checked", this.checked);
@@ -836,30 +851,53 @@ $(document).ready(function () {
     updateBulkToolbar();
   });
 
-  // Edit Button Event Handler
+  // Edit Button Event Handler (with datepicker for date columns)
   $(document).on("click", ".edit-btn", function () {
+    const dateColumns = [
+      "Last_Contact",
+      "SAP_Aspirant",
+      "SAP_Level_1",
+      "SAP_Level_2",
+      "SAP_Level_3",
+      "SAP_Level_4",
+      "SAP_Level_5",
+      "eSAP_Aspirant",
+      "eSAP_Level_1",
+      "eSAP_Level_2",
+      "eSAP_Level_3",
+      "eSAP_Level_4",
+      "eSAP_Level_5",
+    ];
+
     let rowIndex = $(this).data("index");
     let row = $(`tr[data-index="${rowIndex}"]`);
     let saveBtn = row.find(".save-btn");
     let editBtn = row.find(".edit-btn");
 
     if (editBtn.text() === "Edit") {
-      // Turn each editable cell into either an <input> or a <select>
+      // turn each editable cell into the appropriate input
       row.find(".editable").each(function () {
         let cell = $(this);
         let column = cell.data("column");
         let text = cell.text().trim();
 
         if (column === "Deceased" || column === "Duplicate") {
-          // dropdown with True/False
+          // boolean dropdown
           cell.html(`
           <select class="boolean-select">
             <option value="">False</option>
             <option value="1" ${text === "1" ? "selected" : ""}>True</option>
           </select>
         `);
+        } else if (dateColumns.includes(column)) {
+          // datepicker input
+          cell.html(`<input type="text" class="date-input" value="${text}">`);
+          // initialize jQuery UI datepicker
+          cell.find(".date-input").datepicker({
+            dateFormat: "yy-mm-dd",
+          });
         } else {
-          // the old text input
+          // default text input
           cell.html(`<input type="text" value="${text}">`);
         }
       });
@@ -867,11 +905,10 @@ $(document).ready(function () {
       saveBtn.show();
       editBtn.text("Cancel");
     } else {
-      // Cancel: just tear down the inputs, restoring whatever was in them
+      // cancel: tear down inputs and restore text
       row.find(".editable").each(function () {
         let cell = $(this);
         let val = cell.find("input, select").val() || "";
-        // if it was boolean, we store/display as empty or "1"
         cell.text(val);
       });
 

@@ -12,11 +12,7 @@
 
 /* Style the download buttons */
 #downloadButtons button {
-  background: linear-gradient(
-    0deg,
-    #28a745,
-    #007bff
-  ); /* Adjust colors as desired */
+  background: linear-gradient(0deg, #28a745, #007bff);
   color: rgb(242, 242, 242);
   border: none;
   padding: 10px 20px;
@@ -27,13 +23,9 @@
   display: inline-flex;
   align-items: center;
 }
-
-/* Add spacing between icon and text */
 #downloadButtons button i {
   margin-right: 8px;
 }
-
-/* Optional hover effect */
 #downloadButtons button:hover {
   opacity: 0.9;
 }
@@ -72,6 +64,8 @@ h1 {
   border-radius: 5px;
   cursor: pointer;
 }
+
+/* Search Button */
 #searchBtn {
   margin-bottom: 10px;
   background-color: #28a745;
@@ -86,17 +80,17 @@ h1 {
   font-style: italic;
   margin: 0px;
 }
-
 .results-count {
   margin: 0px;
 }
+
 /* Checkbox Layout */
 .checkbox-item {
   display: flex;
   align-items: center;
 }
 
-/* Filter Groups */
+/* Filter & Add-Member Groups */
 .filter-group,
 .add-member-group {
   border: 1px solid #ccc;
@@ -105,7 +99,6 @@ h1 {
   background-color: #f9f9f9;
 }
 
-/* Collapsible Legend */
 .filter-group legend,
 .add-member-group legend {
   font-weight: bold;
@@ -119,7 +112,6 @@ h1 {
   align-items: center;
 }
 
-/* Hide Fields Initially */
 .filter-items,
 .add-member-fields {
   display: none;
@@ -144,7 +136,6 @@ h1 {
   border: 1px solid #ccc;
 }
 
-/* Table */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -159,7 +150,6 @@ td {
   white-space: nowrap; /* Prevents wrapping */
 }
 
-/* Sticky Table Headers */
 thead {
   background-color: #f4f4f4;
   position: sticky;
@@ -175,21 +165,15 @@ thead {
   max-width: 700px;
   margin: 0 auto;
 }
-
-/* Adjust to Single Column on Mobile */
 @media (max-width: 600px) {
   #addMemberForm {
     grid-template-columns: 1fr;
   }
 }
-
-/* Form Labels */
 #addMemberForm label {
   text-align: right;
   font-weight: bold;
 }
-
-/* Form Inputs */
 #addMemberForm input,
 #addMemberForm select {
   width: 100%;
@@ -197,8 +181,6 @@ thead {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
-/* Submit Button */
 #addMemberForm button {
   grid-column: span 2;
   padding: 10px;
@@ -211,13 +193,15 @@ thead {
   margin-top: 10px;
   border-radius: 5px;
 }
-
 #addMemberForm button:hover {
   background-color: #218838;
 }
 
-/* Action buttons in the table */
+/* ──────────────────────────────────────────────
+   Row‐action buttons (edit, save, delete, verify)
+────────────────────────────────────────────── */
 .edit-btn,
+.save-btn,
 .delete-btn,
 .verify-btn {
   border: none;
@@ -228,52 +212,48 @@ thead {
   font-size: 0.9em;
   cursor: pointer;
   white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.edit-btn:hover,
+.save-btn:hover,
+.delete-btn:hover,
+.verify-btn:hover {
+  opacity: 0.9;
 }
 
-/* Edit = blue */
 .edit-btn {
   background-color: #007bff;
 }
-.edit-btn:hover {
-  background-color: #0069d9;
-}
-
-/* Verify = green */
-.verify-btn {
+.save-btn {
   background-color: #28a745;
 }
-.verify-btn:hover {
-  background-color: #218838;
+.verify-btn {
+  background-color: #20c997;
 }
-
-/* Delete = red */
 .delete-btn {
   background-color: #dc3545;
 }
-.delete-btn:hover {
-  background-color: #c82333;
-}
 
-/* Bulk toolbar container */
+/* ──────────────────────────────────────────────
+   Bulk toolbar
+────────────────────────────────────────────── */
 #bulkToolbar {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  margin: 24px 0; /* space above & below */
-  background-color: #f1f1f1; /* light grey background */
+  margin: 24px 0;
+  background-color: #f1f1f1;
   border: 1px solid #ccc;
   border-radius: 6px;
 }
 
-/* “X selected” text */
 #bulkCount {
   font-weight: bold;
   font-size: 1em;
   color: #333;
 }
 
-/* Base styling for bulk buttons */
 #bulkToolbar button {
   border: none;
   color: #fff;
@@ -284,25 +264,21 @@ thead {
   white-space: nowrap;
 }
 
-/* Bulk Edit = blue */
 #bulkEditBtn {
   background-color: #007bff;
 }
-#bulkEditBtn:hover {
-  background-color: #0069d9;
-}
-
-/* Bulk Delete = red */
 #bulkDeleteBtn {
   background-color: #dc3545;
 }
-#bulkDeleteBtn:hover {
-  background-color: #c82333;
-}
-
-/* Clear selection = neutral grey */
 #clearSelectionBtn {
   background-color: #6c757d;
+}
+
+#bulkEditBtn:hover {
+  background-color: #0069d9;
+}
+#bulkDeleteBtn:hover {
+  background-color: #c82333;
 }
 #clearSelectionBtn:hover {
   background-color: #5a6268;
