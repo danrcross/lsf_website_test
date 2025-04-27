@@ -2,6 +2,8 @@ $(document).ready(function () {
   // Event listener for tabs at top of page
   $("#tabs").tabs();
 
+  var members = []; // Array to store member data
+
   // for storing data to global variable
   let paginatedData = {
     totalResults: 0,
@@ -851,14 +853,17 @@ $(document).ready(function () {
       dataType: "json",
       success: function (response) {
         if (response.status === "success" && response.members.length > 0) {
+          members = response.members;
           createPages(response.members);
           updatePage();
           renderSort(response.members);
 
           let countMessage = `<p class="results-count">This search returned <strong>${response.members.length}</strong> results.</p>`;
           $("#resCount").html(countMessage);
+          $("#downloadButtons").removeClass("hidden");
         } else {
           $("#results").html("<p>No results found.</p>");
+          $("#downloadButtons").addClass("hidden");
         }
       },
       error: function () {
@@ -948,6 +953,102 @@ $(document).ready(function () {
         alert("Failed to fetch next LSF number.");
       },
     });
+  });
+
+  function downloadPDF(results) {
+    if (!results || results.length === 0) {
+      alert("No results to download.");
+      return;
+    }
+
+    // Determine the number of columns from the first result
+    const colCount = Object.keys(results[0]).length;
+
+    // Set parameters to calculate dynamic page width:
+    const widthPerColumn = 25; // in mm; adjust as needed
+    const margin = 40; // total horizontal margin in mm
+    // Compute the page width based on number of columns:
+    let computedWidth = colCount * widthPerColumn + margin;
+    // Clamp the computed width between a minimum and maximum value:
+    computedWidth = Math.max(297, Math.min(680, computedWidth));
+
+    // Fixed height for the page (you can adjust this if needed)
+    const fixedHeight = 210;
+
+    // Create a new jsPDF document using landscape mode.
+    // The format is provided as an array: [pageWidth, pageHeight]
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("landscape", "mm", [computedWidth, fixedHeight]);
+
+    // Extract column headers for table generation.
+    const columns = Object.keys(results[0]).map((key) => ({
+      header: key,
+      dataKey: key,
+    }));
+
+    // Generate the table using jsPDF-AutoTable.
+    doc.autoTable({
+      head: [columns.map((col) => col.header)],
+      body: results.map((row) => columns.map((col) => row[col.dataKey])),
+      startY: 20, // leave some space at the top
+      margin: { horizontal: 10 },
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [52, 90, 130] },
+      theme: "grid",
+    });
+
+    // Optionally add a title at the top of the PDF.
+    doc.text("Search Results", 14, 12);
+
+    // Save the generated PDF with a filename.
+    doc.save("search_results.pdf");
+  }
+
+  function downloadCSV(results) {
+    if (!results || !results.length) {
+      alert("No results to download.");
+      return;
+    }
+
+    // Extract column headers from the keys of the first result
+    const headers = Object.keys(results[0]);
+    // Convert headers and rows to CSV format
+    const csvRows = [];
+    csvRows.push(headers.join(","));
+
+    results.forEach((result) => {
+      const values = headers.map((header) => {
+        let val = result[header];
+        if (typeof val === "string") {
+          // Escape double quotes and wrap the value in quotes if necessary
+          val = '"' + val.replace(/"/g, '""') + '"';
+        }
+        return val;
+      });
+      csvRows.push(values.join(","));
+    });
+
+    // Create CSV string and trigger download
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = "search_results.csv";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  }
+
+  $(document).on("click", "#downloadCSVBtn", function () {
+    // Assuming your search results are stored in a variable called 'currentResults'
+    downloadCSV(members);
+  });
+
+  $(document).on("click", "#downloadPDFBtn", function () {
+    downloadPDF(members);
   });
 
   // Fetch columns and filters on page load
