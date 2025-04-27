@@ -501,29 +501,41 @@ $(document).ready(function () {
       <table>
         <thead>
           <tr>
+            <th><input type="checkbox" id="selectAllRows" /></th>
             <th>Actions</th>
-    `;
-    let columns = Object.keys(members.length ? members[0] : {});
+  `;
 
+    const columns = Object.keys(members.length ? members[0] : {});
+
+    // column headers
     columns.forEach((column) => {
       output += `<th>${column.replace(/_/g, " ")}</th>`;
     });
 
     output += `</tr></thead><tbody class="scrollable-tbody">`;
 
+    // rows
     members.forEach((member, index) => {
       output += `<tr data-index="${index}">`;
+
+      // New: per‐row checkbox
+      output += `<td><input type="checkbox" class="rowCheckbox" data-id="${member.id}" /></td>`;
+
+      // Actions
       output += `
       <td>
-        <button class="edit-btn" data-index="${index}">Edit</button>
-        <button class="save-btn" data-index="${index}" style="display: none;">Save</button>
+        <button class="edit-btn"   data-index="${index}">Edit</button>
+        <button class="save-btn"   data-index="${index}" style="display:none">Save</button>
         <button class="delete-btn" data-index="${index}">Delete</button>
         <button class="verify-btn" data-index="${index}">Verify Address</button>
       </td>
     `;
+
+      // Data cells
       columns.forEach((column) => {
         if (column === "id") {
-          output += `<td>${member[column]}</td>`;
+          // mark the id cell so other code can find it reliably
+          output += `<td data-column="id">${member[column]}</td>`;
         } else if (nonEditableColumns.includes(column)) {
           output += `<td>${member[column] ?? ""}</td>`;
         } else {
@@ -532,12 +544,297 @@ $(document).ready(function () {
           }</td>`;
         }
       });
+
       output += `</tr>`;
     });
 
     output += `</tbody></table></div>`;
     $("#results").html(output);
   }
+  // update bulk‐toolbar visibility & count
+  /**
+   * Show/hide bulk-toolbar and always update the "X selected" count.
+   */
+  function updateBulkToolbar() {
+    // how many are checked?
+    const n = $(".rowCheckbox:checked").length;
+
+    // always update the text
+    $("#bulkCount").text(n + " selected");
+
+    // show the bar when at least one, hide when zero
+    if (n > 0) {
+      $("#bulkToolbar").removeClass("hidden");
+    } else {
+      $("#bulkToolbar").addClass("hidden");
+    }
+  }
+
+  /**
+   * Prompt the user “Are you sure?” and then POST to bulk_delete.php.
+   */
+  function showBulkDeleteDialog() {
+    const n = $(".rowCheckbox:checked").length;
+    $("<div>")
+      .html(
+        `<p>Are you sure you want to delete <strong>${n}</strong> records?</p>`
+      )
+      .dialog({
+        modal: true,
+        title: "Confirm Bulk Delete",
+        buttons: {
+          Delete() {
+            const ids = $(".rowCheckbox:checked")
+              .map((_, el) => $(el).data("id"))
+              .get();
+            $.ajax({
+              url: "queries/bulk_delete.php",
+              method: "POST",
+              data: JSON.stringify({ ids }),
+              contentType: "application/json",
+              dataType: "json",
+              success(resp) {
+                if (resp.success) {
+                  // remove from in-memory & re-render
+                  Object.keys(paginatedData.pages).forEach((p) => {
+                    paginatedData.pages[p] = paginatedData.pages[p].filter(
+                      (m) => !ids.includes(m.id)
+                    );
+                  });
+                  paginatedData.totalResults -= ids.length;
+                  paginatedData.totalPages = Math.ceil(
+                    paginatedData.totalResults / paginatedData.perPage
+                  );
+                  updatePage();
+                } else {
+                  alert("Error: " + resp.message);
+                }
+              },
+            });
+            $(this).dialog("close");
+          },
+          Cancel() {
+            $(this).dialog("close");
+          },
+        },
+      });
+  }
+
+  /**
+   * Build a simple form for every editable column
+   * and POST the non-blank values to bulk_edit.php.
+   */
+  function showBulkEditDialog() {
+    const editableCols = myQuery.columns.filter(
+      (c) => c !== "id" && c !== "SAP_Level" && c !== "eSAP_Level"
+    );
+    let form = '<form id="bulkEditForm">';
+    editableCols.forEach((col) => {
+      form += `
+      <div style="margin-bottom:8px">
+        <label>${col.replace(/_/g, " ")}</label><br/>
+        <input type="text" name="${col}"
+               placeholder="(leave blank to skip)"
+               style="width:100%"/>
+      </div>`;
+    });
+    form += "</form>";
+
+    $("<div>")
+      .html(form)
+      .dialog({
+        modal: true,
+        title: "Bulk Edit",
+        width: 500,
+        buttons: {
+          Save() {
+            const updates = {};
+            $("#bulkEditForm")
+              .serializeArray()
+              .forEach(({ name, value }) => {
+                if (value.trim() !== "") updates[name] = value.trim();
+              });
+            if (!Object.keys(updates).length) {
+              alert("Please enter at least one field to update.");
+              return;
+            }
+            const ids = $(".rowCheckbox:checked")
+              .map((_, el) => $(el).data("id"))
+              .get();
+            $.ajax({
+              url: "queries/bulk_edit.php",
+              method: "POST",
+              data: JSON.stringify({ ids, updates }),
+              contentType: "application/json",
+              dataType: "json",
+              success(resp) {
+                if (resp.success) {
+                  Object.keys(paginatedData.pages).forEach((p) => {
+                    paginatedData.pages[p].forEach((m) => {
+                      if (ids.includes(m.id)) Object.assign(m, updates);
+                    });
+                  });
+                  updatePage();
+                } else {
+                  alert("Error: " + resp.message);
+                }
+              },
+            });
+            $(this).dialog("close");
+          },
+          Cancel() {
+            $(this).dialog("close");
+          },
+        },
+      });
+  }
+  // master toggle:
+  $(document).on("change", "#selectAllRows", function () {
+    $(".rowCheckbox").prop("checked", this.checked);
+    updateBulkToolbar();
+  });
+  // individual row toggles
+  $(document).on("change", ".rowCheckbox", updateBulkToolbar);
+
+  // bulk toolbar buttons
+  $(document).on("click", "#bulkDeleteBtn", showBulkDeleteDialog);
+  $(document).on("click", "#bulkEditBtn", showBulkEditDialog);
+  $(document).on("click", "#clearSelectionBtn", function () {
+    $("#selectAllRows, .rowCheckbox").prop("checked", false);
+    updateBulkToolbar();
+  });
+
+  // show the “are you sure?” delete dialog
+  function showBulkDeleteDialog() {
+    const n = $(".rowCheckbox:checked").length;
+    $("#bulkDeleteDialog")
+      .html(
+        `<p>Are you sure you want to delete <strong>${n}</strong> records?</p>`
+      )
+      .dialog({
+        modal: true,
+        title: "Confirm Bulk Delete",
+        buttons: {
+          Delete() {
+            const ids = $(".rowCheckbox:checked")
+              .map((_, el) => $(el).data("id"))
+              .get();
+            $.ajax({
+              url: "queries/bulk_delete.php",
+              method: "POST",
+              data: JSON.stringify({ ids }),
+              contentType: "application/json",
+              dataType: "json",
+              success(resp) {
+                if (resp.success) {
+                  // remove from in‐memory and re‐render
+                  Object.keys(paginatedData.pages).forEach((p) => {
+                    paginatedData.pages[p] = paginatedData.pages[p].filter(
+                      (m) => !ids.includes(m.id)
+                    );
+                  });
+                  paginatedData.totalResults -= ids.length;
+                  paginatedData.totalPages = Math.ceil(
+                    paginatedData.totalResults / paginatedData.perPage
+                  );
+                  updatePage();
+                } else {
+                  alert("Error: " + resp.message);
+                }
+              },
+            });
+            $(this).dialog("close");
+          },
+          Cancel() {
+            $(this).dialog("close");
+          },
+        },
+      });
+  }
+
+  // show the bulk‐edit UI dialog
+  function showBulkEditDialog() {
+    // build a small form for each editable column
+    const editable = myQuery.columns.filter(
+      (c) => c !== "id" && c !== "SAP_Level" && c !== "eSAP_Level"
+    );
+    let form = '<form id="bulkEditForm">';
+    editable.forEach((col) => {
+      form += `
+      <div style="margin-bottom:8px">
+        <label for="bulk_${col}">${col.replace(/_/g, " ")}</label><br/>
+        <input type="text" id="bulk_${col}" name="${col}" placeholder="(leave blank to skip)" style="width:100%"/>
+      </div>
+    `;
+    });
+    form += "</form>";
+
+    $("#bulkEditDialog")
+      .html(form)
+      .dialog({
+        modal: true,
+        title: "Bulk Edit",
+        width: 500,
+        buttons: {
+          Save() {
+            // collect non‐empty values
+            const updates = {};
+            $("#bulkEditForm")
+              .serializeArray()
+              .forEach(({ name, value }) => {
+                if (value.trim() !== "") updates[name] = value.trim();
+              });
+            if (!Object.keys(updates).length) {
+              alert("Please enter at least one field to update.");
+              return;
+            }
+            const ids = $(".rowCheckbox:checked")
+              .map((_, el) => $(el).data("id"))
+              .get();
+            $.ajax({
+              url: "queries/bulk_edit.php",
+              method: "POST",
+              data: JSON.stringify({ ids, updates }),
+              contentType: "application/json",
+              dataType: "json",
+              success(resp) {
+                if (resp.success) {
+                  // merge into in‐memory and re-render
+                  Object.keys(paginatedData.pages).forEach((p) => {
+                    paginatedData.pages[p].forEach((m) => {
+                      if (ids.includes(m.id)) Object.assign(m, updates);
+                    });
+                  });
+                  updatePage();
+                } else {
+                  alert("Error: " + resp.message);
+                }
+              },
+            });
+            $(this).dialog("close");
+          },
+          Cancel() {
+            $(this).dialog("close");
+          },
+        },
+      });
+  }
+  // select‐all checkbox toggles every row
+  $(document).on("change", "#selectAllRows", function () {
+    $(".rowCheckbox").prop("checked", this.checked);
+    updateBulkToolbar();
+  });
+
+  // any individual row checkbox
+  $(document).on("change", ".rowCheckbox", updateBulkToolbar);
+
+  // bulk toolbar buttons
+  $(document).on("click", "#bulkDeleteBtn", showBulkDeleteDialog);
+  $(document).on("click", "#bulkEditBtn", showBulkEditDialog);
+  $(document).on("click", "#clearSelectionBtn", function () {
+    $("#selectAllRows, .rowCheckbox").prop("checked", false);
+    updateBulkToolbar();
+  });
 
   // Edit Button Event Handler
   $(document).on("click", ".edit-btn", function () {
