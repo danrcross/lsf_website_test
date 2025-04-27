@@ -546,18 +546,38 @@ $(document).ready(function () {
     let saveBtn = row.find(".save-btn");
     let editBtn = row.find(".edit-btn");
 
-    if ($(this).text() === "Edit") {
+    if (editBtn.text() === "Edit") {
+      // Turn each editable cell into either an <input> or a <select>
       row.find(".editable").each(function () {
-        let text = $(this).text();
-        $(this).html(`<input type="text" value="${text}">`);
+        let cell = $(this);
+        let column = cell.data("column");
+        let text = cell.text().trim();
+
+        if (column === "Deceased" || column === "Duplicate") {
+          // dropdown with True/False
+          cell.html(`
+          <select class="boolean-select">
+            <option value="">False</option>
+            <option value="1" ${text === "1" ? "selected" : ""}>True</option>
+          </select>
+        `);
+        } else {
+          // the old text input
+          cell.html(`<input type="text" value="${text}">`);
+        }
       });
+
       saveBtn.show();
       editBtn.text("Cancel");
     } else {
+      // Cancel: just tear down the inputs, restoring whatever was in them
       row.find(".editable").each(function () {
-        let text = $(this).find("input").val();
-        $(this).text(text);
+        let cell = $(this);
+        let val = cell.find("input, select").val() || "";
+        // if it was boolean, we store/display as empty or "1"
+        cell.text(val);
       });
+
       saveBtn.hide();
       editBtn.text("Edit");
     }
@@ -565,63 +585,66 @@ $(document).ready(function () {
 
   // Save Button Event Handler
   $(document).on("click", ".save-btn", function () {
-    let rowIndex = $(this).data("index");
-    let row = $(`tr[data-index="${rowIndex}"]`);
-    let editBtn = row.find(".edit-btn");
-    let memberId = row.find("td:nth-child(2)").text().trim();
+    const rowIndex = $(this).data("index");
+    const row = $(`tr[data-index="${rowIndex}"]`);
+    const editBtn = row.find(".edit-btn");
+    const memberId = row.find("td:nth-child(2)").text().trim();
 
     if (!memberId) {
       alert("Error: Member ID is missing.");
       return;
     }
+    if (!confirm("Are you sure you want to save the changes?")) return;
 
-    let confirmSave = confirm("Are you sure you want to save the changes?");
-    if (!confirmSave) return;
-
+    // 1) Gather the updated values
     let rowData = {};
     row.find(".editable").each(function () {
-      let columnName = $(this).data("column");
-      let newValue = $(this).find("input").val() || $(this).text().trim();
+      let cell = $(this);
+      let columnName = cell.data("column");
+      let newValue;
+
+      if (columnName === "Deceased" || columnName === "Duplicate") {
+        // True/False dropdown
+        let sel = cell.find("select.boolean-select").val();
+        newValue = sel === "1" ? 1 : null;
+      } else {
+        // Text inputs
+        newValue = cell.find("input").val().trim();
+      }
+
       rowData[columnName] = newValue;
     });
 
+    // 2) Send to the server
     $.ajax({
       url: "queries/edit.php",
       type: "POST",
       data: { data: rowData, id: memberId },
       dataType: "json",
       success: function (response) {
-        if (response.success) {
-          console.log("Update successful:", response.message);
-          let paginatedData = JSON.parse(
-            localStorage.getItem("paginatedMembers")
-          );
-          if (paginatedData) {
-            Object.keys(paginatedData.pages).forEach((page) => {
-              paginatedData.pages[page] = paginatedData.pages[page].map(
-                (member) =>
-                  member.id == memberId ? { ...member, ...rowData } : member
-              );
-            });
-            localStorage.setItem(
-              "paginatedMembers",
-              JSON.stringify(paginatedData)
-            );
-            updatePage();
-          }
-          row.find(".editable").each(function () {
-            let columnName = $(this).data("column");
-            $(this).text(rowData[columnName]);
-          });
-          row.find(".save-btn").hide();
-          editBtn.text("Edit");
-        } else {
-          console.error("Update failed:", response.message);
+        if (!response.success) {
           alert("Error: " + response.message);
+          return;
         }
+
+        // === MERGE & RE-RENDER ===
+
+        // Merge the updated fields into our in-memory data
+        const pageArr = paginatedData.pages[myQuery.page];
+        const memberObj = pageArr[rowIndex];
+        Object.assign(memberObj, rowData);
+
+        // Repaint the entire table from paginatedData
+        updatePage();
+
+        // Optionally, reset the buttons if updatePage didn't already
+        // find the row again (since updatePage rebuilds the whole table):
+        // $(`tr[data-index="${rowIndex}"] .save-btn`).hide();
+        // $(`tr[data-index="${rowIndex}"] .edit-btn`).text("Edit");
+
+        // ==========================
       },
-      error: function (xhr, status, error) {
-        console.error("AJAX error:", error);
+      error: function () {
         alert("Failed to save changes. Please try again.");
       },
     });
