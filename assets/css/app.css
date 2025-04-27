@@ -1,3 +1,43 @@
+/* Hide element */
+.hidden {
+  display: none;
+}
+
+#resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0px;
+}
+
+/* Style the download buttons */
+#downloadButtons button {
+  background: linear-gradient(
+    0deg,
+    #28a745,
+    #007bff
+  ); /* Adjust colors as desired */
+  color: rgb(242, 242, 242);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 10px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Add spacing between icon and text */
+#downloadButtons button i {
+  margin-right: 8px;
+}
+
+/* Optional hover effect */
+#downloadButtons button:hover {
+  opacity: 0.9;
+}
+
 h1 {
   font-family: "Courier New", Courier, monospace;
   font-size: 2em;
@@ -44,6 +84,11 @@ h1 {
 
 #resCount {
   font-style: italic;
+  margin: 0px;
+}
+
+.results-count {
+  margin: 0px;
 }
 /* Checkbox Layout */
 .checkbox-item {

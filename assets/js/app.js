@@ -2,6 +2,8 @@ $(document).ready(function () {
   // Event listener for tabs at top of page
   $("#tabs").tabs();
 
+  var members = []; // Array to store member data
+
   // for storing data to global variable
   let paginatedData = {
     totalResults: 0,
@@ -544,18 +546,38 @@ $(document).ready(function () {
     let saveBtn = row.find(".save-btn");
     let editBtn = row.find(".edit-btn");
 
-    if ($(this).text() === "Edit") {
+    if (editBtn.text() === "Edit") {
+      // Turn each editable cell into either an <input> or a <select>
       row.find(".editable").each(function () {
-        let text = $(this).text();
-        $(this).html(`<input type="text" value="${text}">`);
+        let cell = $(this);
+        let column = cell.data("column");
+        let text = cell.text().trim();
+
+        if (column === "Deceased" || column === "Duplicate") {
+          // dropdown with True/False
+          cell.html(`
+          <select class="boolean-select">
+            <option value="">False</option>
+            <option value="1" ${text === "1" ? "selected" : ""}>True</option>
+          </select>
+        `);
+        } else {
+          // the old text input
+          cell.html(`<input type="text" value="${text}">`);
+        }
       });
+
       saveBtn.show();
       editBtn.text("Cancel");
     } else {
+      // Cancel: just tear down the inputs, restoring whatever was in them
       row.find(".editable").each(function () {
-        let text = $(this).find("input").val();
-        $(this).text(text);
+        let cell = $(this);
+        let val = cell.find("input, select").val() || "";
+        // if it was boolean, we store/display as empty or "1"
+        cell.text(val);
       });
+
       saveBtn.hide();
       editBtn.text("Edit");
     }
@@ -563,63 +585,66 @@ $(document).ready(function () {
 
   // Save Button Event Handler
   $(document).on("click", ".save-btn", function () {
-    let rowIndex = $(this).data("index");
-    let row = $(`tr[data-index="${rowIndex}"]`);
-    let editBtn = row.find(".edit-btn");
-    let memberId = row.find("td:nth-child(2)").text().trim();
+    const rowIndex = $(this).data("index");
+    const row = $(`tr[data-index="${rowIndex}"]`);
+    const editBtn = row.find(".edit-btn");
+    const memberId = row.find("td:nth-child(2)").text().trim();
 
     if (!memberId) {
       alert("Error: Member ID is missing.");
       return;
     }
+    if (!confirm("Are you sure you want to save the changes?")) return;
 
-    let confirmSave = confirm("Are you sure you want to save the changes?");
-    if (!confirmSave) return;
-
+    // 1) Gather the updated values
     let rowData = {};
     row.find(".editable").each(function () {
-      let columnName = $(this).data("column");
-      let newValue = $(this).find("input").val() || $(this).text().trim();
+      let cell = $(this);
+      let columnName = cell.data("column");
+      let newValue;
+
+      if (columnName === "Deceased" || columnName === "Duplicate") {
+        // True/False dropdown
+        let sel = cell.find("select.boolean-select").val();
+        newValue = sel === "1" ? 1 : null;
+      } else {
+        // Text inputs
+        newValue = cell.find("input").val().trim();
+      }
+
       rowData[columnName] = newValue;
     });
 
+    // 2) Send to the server
     $.ajax({
       url: "queries/edit.php",
       type: "POST",
       data: { data: rowData, id: memberId },
       dataType: "json",
       success: function (response) {
-        if (response.success) {
-          console.log("Update successful:", response.message);
-          let paginatedData = JSON.parse(
-            localStorage.getItem("paginatedMembers")
-          );
-          if (paginatedData) {
-            Object.keys(paginatedData.pages).forEach((page) => {
-              paginatedData.pages[page] = paginatedData.pages[page].map(
-                (member) =>
-                  member.id == memberId ? { ...member, ...rowData } : member
-              );
-            });
-            localStorage.setItem(
-              "paginatedMembers",
-              JSON.stringify(paginatedData)
-            );
-            updatePage();
-          }
-          row.find(".editable").each(function () {
-            let columnName = $(this).data("column");
-            $(this).text(rowData[columnName]);
-          });
-          row.find(".save-btn").hide();
-          editBtn.text("Edit");
-        } else {
-          console.error("Update failed:", response.message);
+        if (!response.success) {
           alert("Error: " + response.message);
+          return;
         }
+
+        // === MERGE & RE-RENDER ===
+
+        // Merge the updated fields into our in-memory data
+        const pageArr = paginatedData.pages[myQuery.page];
+        const memberObj = pageArr[rowIndex];
+        Object.assign(memberObj, rowData);
+
+        // Repaint the entire table from paginatedData
+        updatePage();
+
+        // Optionally, reset the buttons if updatePage didn't already
+        // find the row again (since updatePage rebuilds the whole table):
+        // $(`tr[data-index="${rowIndex}"] .save-btn`).hide();
+        // $(`tr[data-index="${rowIndex}"] .edit-btn`).text("Edit");
+
+        // ==========================
       },
-      error: function (xhr, status, error) {
-        console.error("AJAX error:", error);
+      error: function () {
         alert("Failed to save changes. Please try again.");
       },
     });
@@ -839,7 +864,7 @@ $(document).ready(function () {
     };
 
     $.ajax({
-      url: "query.php",
+      url: "queries/query.php",
       type: "POST",
       data: {
         limit: myQuery.limit,
@@ -851,14 +876,17 @@ $(document).ready(function () {
       dataType: "json",
       success: function (response) {
         if (response.status === "success" && response.members.length > 0) {
+          members = response.members;
           createPages(response.members);
           updatePage();
           renderSort(response.members);
 
           let countMessage = `<p class="results-count">This search returned <strong>${response.members.length}</strong> results.</p>`;
           $("#resCount").html(countMessage);
+          $("#downloadButtons").removeClass("hidden");
         } else {
           $("#results").html("<p>No results found.</p>");
+          $("#downloadButtons").addClass("hidden");
         }
       },
       error: function () {
@@ -948,6 +976,102 @@ $(document).ready(function () {
         alert("Failed to fetch next LSF number.");
       },
     });
+  });
+
+  function downloadPDF(results) {
+    if (!results || results.length === 0) {
+      alert("No results to download.");
+      return;
+    }
+
+    // Determine the number of columns from the first result
+    const colCount = Object.keys(results[0]).length;
+
+    // Set parameters to calculate dynamic page width:
+    const widthPerColumn = 25; // in mm; adjust as needed
+    const margin = 40; // total horizontal margin in mm
+    // Compute the page width based on number of columns:
+    let computedWidth = colCount * widthPerColumn + margin;
+    // Clamp the computed width between a minimum and maximum value:
+    computedWidth = Math.max(297, Math.min(680, computedWidth));
+
+    // Fixed height for the page (you can adjust this if needed)
+    const fixedHeight = 210;
+
+    // Create a new jsPDF document using landscape mode.
+    // The format is provided as an array: [pageWidth, pageHeight]
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("landscape", "mm", [computedWidth, fixedHeight]);
+
+    // Extract column headers for table generation.
+    const columns = Object.keys(results[0]).map((key) => ({
+      header: key,
+      dataKey: key,
+    }));
+
+    // Generate the table using jsPDF-AutoTable.
+    doc.autoTable({
+      head: [columns.map((col) => col.header)],
+      body: results.map((row) => columns.map((col) => row[col.dataKey])),
+      startY: 20, // leave some space at the top
+      margin: { horizontal: 10 },
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [52, 90, 130] },
+      theme: "grid",
+    });
+
+    // Optionally add a title at the top of the PDF.
+    doc.text("Search Results", 14, 12);
+
+    // Save the generated PDF with a filename.
+    doc.save("search_results.pdf");
+  }
+
+  function downloadCSV(results) {
+    if (!results || !results.length) {
+      alert("No results to download.");
+      return;
+    }
+
+    // Extract column headers from the keys of the first result
+    const headers = Object.keys(results[0]);
+    // Convert headers and rows to CSV format
+    const csvRows = [];
+    csvRows.push(headers.join(","));
+
+    results.forEach((result) => {
+      const values = headers.map((header) => {
+        let val = result[header];
+        if (typeof val === "string") {
+          // Escape double quotes and wrap the value in quotes if necessary
+          val = '"' + val.replace(/"/g, '""') + '"';
+        }
+        return val;
+      });
+      csvRows.push(values.join(","));
+    });
+
+    // Create CSV string and trigger download
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = "search_results.csv";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  }
+
+  $(document).on("click", "#downloadCSVBtn", function () {
+    // Assuming your search results are stored in a variable called 'currentResults'
+    downloadCSV(members);
+  });
+
+  $(document).on("click", "#downloadPDFBtn", function () {
+    downloadPDF(members);
   });
 
   // Fetch columns and filters on page load
