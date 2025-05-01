@@ -1,38 +1,36 @@
-h1
-{
-  font: bold 18px arial,sans-serif;
-  text-align: center 
+h1 {
+  font: bold 18px arial, sans-serif;
+  text-align: center;
 }
 
-h2
-{
-  font: bold 16px arial,sans-serif;
-  text-align: left
+h2 {
+  font: bold 16px arial, sans-serif;
+  text-align: left;
 }
 
-h3
-{
-  font: bold 14px arial,sans-serif;
-  text-align: center
+h3 {
+  font: bold 14px arial, sans-serif;
+  text-align: center;
 }
 
-p, ul, li
-{
-  font: 14px arial,sans-serif;
-  text-align: justify
+p,
+ul,
+li {
+  font: 14px arial, sans-serif;
+  text-align: justify;
 }
 
 .title {
-  max-width:100%;
-  height:auto; 
+  max-width: 100%;
+  height: auto;
 }
 
 .title_text {
-  font:48px arial,sans-serif;
-  color:white;
-  position:absolute;
-  top:5px;
-  left:270px;
+  font: 48px arial, sans-serif;
+  color: white;
+  position: absolute;
+  top: 5px;
+  left: 270px;
 }
 
 .overallcontainer {
@@ -58,28 +56,48 @@ p, ul, li
 }
 
 @media screen and (max-width: 990px) {
-  .container { padding-top: 65%; }
-  .title_text { font: 36px arial,sans-serif; }
+  .container {
+    padding-top: 65%;
+  }
+  .title_text {
+    font: 36px arial, sans-serif;
+  }
 }
 
 @media screen and (max-width: 700px) {
-  .container { padding-top: 90%; }
-  .title_text { font: 24px arial,sans-serif; }
+  .container {
+    padding-top: 90%;
+  }
+  .title_text {
+    font: 24px arial, sans-serif;
+  }
 }
 
 @media screen and (max-width: 600px) {
-  .container { padding-top: 100%; }
-  .title_text { font: 20px arial,sans-serif; }
+  .container {
+    padding-top: 100%;
+  }
+  .title_text {
+    font: 20px arial, sans-serif;
+  }
 }
 
 @media screen and (max-width: 550px) {
-  .container { padding-top: 110%; }
-  .title_text { font: 16px arial,sans-serif; }
+  .container {
+    padding-top: 110%;
+  }
+  .title_text {
+    font: 16px arial, sans-serif;
+  }
 }
 
 @media screen and (max-width: 500px) {
-  .container { padding-top: 120%; }
-  .title_text { font: 10px arial,sans-serif; }
+  .container {
+    padding-top: 120%;
+  }
+  .title_text {
+    font: 10px arial, sans-serif;
+  }
 }
 
 .footer {
@@ -88,14 +106,14 @@ p, ul, li
   width: 100%;
   height: 40px;
   max-width: 1100px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
 }
 
 .footer_text {
   color: #999999;
-  font: 12px arial,sans-serif;
+  font: 12px arial, sans-serif;
   font-style: italic;
-  text-align: center
+  text-align: center;
 }
 
 .update_text {
@@ -105,36 +123,41 @@ p, ul, li
 
 .footnote_text {
   color: #999999;
-  font: 12px arial,sans-serif;
+  font: 12px arial, sans-serif;
 }
 
 .calendar_text {
-  font-family: arial,helvetica,sans-serif;
+  font-family: arial, helvetica, sans-serif;
   border-collapse: collapse;
   width: 100%;
 }
 
-.calendar_text td, #calendar_text th {
+.calendar_text td,
+#calendar_text th {
   border: 1px solid #ddd;
   padding: 8px;
 }
 
-.calendar_text tr:nth-child(even){background-color: #f2f2f2;}
+.calendar_text tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
 
-.calendar_text tr:hover {background-color: #ddd;}
+.calendar_text tr:hover {
+  background-color: #ddd;
+}
 
 .calendar_text th {
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: left;
-  background-color: #04AA6D;
+  background-color: #04aa6d;
   color: white;
 }
 
 .infobutton {
-  font-family: arial,helvetica,sans-serif;
-  border: 2px solid #246EC0;
-  background: #2D89EF;
+  font-family: arial, helvetica, sans-serif;
+  border: 2px solid #246ec0;
+  background: #2d89ef;
   color: white;
   padding: 5px;
   width: 150px;
@@ -143,9 +166,9 @@ p, ul, li
 }
 
 .pilotbutton {
-  font-family: arial,helvetica,sans-serif;
-  border: 2px solid #8C629E;
-  background: #AF7AC5;
+  font-family: arial, helvetica, sans-serif;
+  border: 2px solid #8c629e;
+  background: #af7ac5;
   color: white;
   padding: 5px;
   width: 150px;
@@ -154,8 +177,8 @@ p, ul, li
 }
 
 .scoresbutton {
-  font-family: arial,helvetica,sans-serif;
-  border: 2px solid #129C2A;
+  font-family: arial, helvetica, sans-serif;
+  border: 2px solid #129c2a;
   background: #16c234;
   color: white;
   padding: 5px;
@@ -165,7 +188,7 @@ p, ul, li
 }
 
 .cancelledbutton {
-  font-family: arial,helvetica,sans-serif;
+  font-family: arial, helvetica, sans-serif;
   border: 2px solid #752310;
   background-color: red;
   color: white;
@@ -176,9 +199,9 @@ p, ul, li
 }
 
 .teambutton {
-  font-family: arial,helvetica,sans-serif;
-  border:2px solid #c36196;  
-  background-color:#f379bb;
+  font-family: arial, helvetica, sans-serif;
+  border: 2px solid #c36196;
+  background-color: #f379bb;
   color: white;
   padding: 5px;
   width: 150px;
@@ -187,9 +210,9 @@ p, ul, li
 }
 
 .mapbutton {
-  font-family: arial,helvetica,sans-serif;
-  border:2px solid #5b5b5b;  
-  background-color:#717171;
+  font-family: arial, helvetica, sans-serif;
+  border: 2px solid #5b5b5b;
+  background-color: #717171;
   color: white;
   padding: 5px;
   width: 150px;
@@ -201,7 +224,7 @@ p, ul, li
   overflow: hidden;
   background: linear-gradient(to bottom, #66ff66 0%, #009933 100%);
   font-family: Arial;
-  max-width:1100px;  
+  max-width: 1100px;
 }
 
 .navbar a {
@@ -229,7 +252,8 @@ p, ul, li
   margin: 0; /* Important for vertical align on mobile phones */
 }
 
-.navbar a:hover, .dropdown:hover .dropbtn {
+.navbar a:hover,
+.dropdown:hover .dropbtn {
   background-color: red;
 }
 
@@ -238,7 +262,7 @@ p, ul, li
   position: absolute;
   background-color: #f9f9f9;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
   overflow: auto;
 }
@@ -318,7 +342,7 @@ p, ul, li
 }
 
 .btn-blue button {
-  font-family: arial,helvetica,sans-serif;
+  font-family: arial, helvetica, sans-serif;
   font-size: 15px;
   background-color: dodgerblue;
   color: white;
@@ -343,7 +367,7 @@ p, ul, li
 }
 
 .btn-pblue button {
-  font-family: arial,helvetica,sans-serif;
+  font-family: arial, helvetica, sans-serif;
   font-size: 15px;
   background-color: #003153;
   color: white;
@@ -368,7 +392,7 @@ p, ul, li
 }
 
 .btn-green button {
-  font-family: arial,helvetica,sans-serif;
+  font-family: arial, helvetica, sans-serif;
   font-size: 15px;
   background-color: #00cc44;
   color: white;
@@ -389,7 +413,7 @@ p, ul, li
 }
 
 .btn-orange button {
-  font-family: arial,helvetica,sans-serif;
+  font-family: arial, helvetica, sans-serif;
   font-size: 15px;
   background-color: #f59300;
   color: white;
@@ -418,7 +442,7 @@ p, ul, li
 }
 
 .btn-brown button {
-  font-family: arial,helvetica,sans-serif;
+  font-family: arial, helvetica, sans-serif;
   font-size: 15px;
   background-color: #996633;
   color: white;
@@ -447,7 +471,7 @@ p, ul, li
 }
 
 .btn-red button {
-  font-family: arial,helvetica,sans-serif;
+  font-family: arial, helvetica, sans-serif;
   font-size: 15px;
   background-color: #ff0000;
   color: white;
@@ -476,7 +500,7 @@ p, ul, li
 }
 
 .btn-purple button {
-  font-family: arial,helvetica,sans-serif;
+  font-family: arial, helvetica, sans-serif;
   font-size: 15px;
   background-color: #8800cc;
   color: white;
@@ -505,15 +529,134 @@ p, ul, li
 }
 
 figure {
-  float:right;
-  padding:20px;
-  margin:auto;
+  float: right;
+  padding: 20px;
+  margin: auto;
 }
 
 figcaption {
-  background-color:white;
-  color:black;
+  background-color: white;
+  color: black;
   font-family: Arial, Helvetica, sans-serif;
-  padding:2px;
-  text-align:center;
+  padding: 2px;
+  text-align: center;
+}
+
+/* the single header at top */
+#header-bar {
+  position: relative;
+  height: 140px;
+  background: linear-gradient(
+    to bottom,
+    #3f85bc 0%,
+    /* deep blue */ #bbd3e7 100% /* bright cyan */
+  );
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  overflow: hidden;
+}
+
+/* logo styling (optional, move that padding out of the tag) */
+#header-bar .logo {
+  float: left;
+  padding: 10px;
+  height: 120px; /* or whatever keeps it vertically centered */
+}
+
+/* page title */
+#header-bar .title_text {
+  position: absolute;
+  top: 50%;
+  left: 270px;
+  transform: translateY(-50%);
+  margin: 0;
+  font: 48px Arial, sans-serif;
+  color: white;
+}
+
+/* the login button, absolutely positioned in that header */
+#login-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #fff;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-weight: 300;
+  z-index: 10;
+}
+#login-btn:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* your nav bar sits right underneath the header */
+.navbar {
+  background: linear-gradient(
+    to bottom,
+    #6ac029 0%,
+    /* light green */ #3c681a 100% /* darker green */
+  );
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  border-radius: 0 0 0 0; /* if you want square edges */
+}
+
+/* --- login form styles --- */
+.login-container {
+  max-width: 360px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.login-container .input-group {
+  position: relative;
+  margin-bottom: 16px;
+}
+.login-container .input-group .fa {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 14px;
+}
+.login-container .input-group input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.login-container .remember-me {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #555;
+}
+.login-container .login-btn {
+  width: 100%;
+  padding: 10px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.login-container .login-btn:hover {
+  background: #333;
+}
+.login-container .forgot-link {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #007bff;
+  text-decoration: none;
+}
+.login-container .forgot-link:hover {
+  text-decoration: underline;
 }
