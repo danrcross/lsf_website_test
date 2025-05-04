@@ -1,57 +1,81 @@
 <?php
 header("Content-Type: application/json");
-require_once "../includes/config.php"; // Include database connection
+require_once "../includes/config.php";
 
 try {
-    // Check if POST data is received
     if ($_SERVER["REQUEST_METHOD"] !== "POST") {
         throw new Exception("Invalid request method.");
     }
-    $id= $_POST['id'] ?? null;
-    $updateData= $_POST['data'] ?? [];
+
+    // 1) Pull in your POSTed fields
+    $id         = $_POST['id']   ?? null;
+    $updateData = $_POST['data'] ?? [];
 
     if (!$id) {
-        throw new Exception("ID is required.");
+        throw new Exception("Valid member ID is required.");
     }
-
     if (empty($updateData)) {
-        throw new Exception("Data is required.");
+        throw new Exception("No data provided to update.");
     }
 
-    //Build dynamic query...
-    $columns=[];
-    $values=[];
-    // loop through data, separate keys and values into two arrays
-    $nonEditableColumns = ["SAP_Level", "eSAP_Level"]; // Exclude computed columns
-foreach ($updateData as $key => $value) {
-    if (in_array($key, $nonEditableColumns)) {
-        continue; // Skip computed columns
+    // 2) If LSF_Number is being changed, ensure uniqueness
+    if (isset($updateData['LSF_Number']) && trim($updateData['LSF_Number']) !== '') {
+        $lsf = trim($updateData['LSF_Number']);
+        $stmt = $conn->prepare(
+            "SELECT COUNT(*) FROM members 
+             WHERE LSF_Number = :lsf 
+               AND id          != :id"
+        );
+        $stmt->execute([
+            ':lsf' => $lsf,
+            ':id'  => $id
+        ]);
+        if ($stmt->fetchColumn() > 0) {
+            echo json_encode([
+                'success' => false,
+                'message' => "LSF Number {$lsf} is already in use by another member."
+            ]);
+            exit;
+        }
     }
-    $columns[] = "`$key` = ?";
-    $values[] = ($value === "") ? null : $value; // Convert empty string to NULL
+
+    // 3) Build dynamic UPDATE (skip computed columns)
+    $nonEditable = ['SAP_Level', 'eSAP_Level'];
+    $sets   = [];
+    $values = [];
+
+    foreach ($updateData as $col => $val) {
+        if (in_array($col, $nonEditable)) continue;
+        $sets[]   = "`$col` = ?";
+        $values[] = ($val === "" ? null : $val);
+    }
+
+    if (empty($sets)) {
+        throw new Exception("No updatable fields provided.");
+    }
+
+    $sql = "UPDATE members 
+            SET " . implode(", ", $sets) . " 
+            WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+
+    // 4) Bind all the values + the id
+    foreach ($values as $i => $v) {
+        $stmt->bindValue($i+1, $v, is_null($v) ? PDO::PARAM_NULL : PDO::PARAM_STR);
+    }
+    // last placeholder is the ID
+    $stmt->bindValue(count($values)+1, $id, PDO::PARAM_INT);
+
+    $stmt->execute();
+
+    echo json_encode([
+        'success' => true,
+        'message' => "Member updated successfully."
+    ]);
+
+} catch (Exception $e) {
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }
-
-    // Build query string from the keys. .implode will join the keys with a comma and space, as required by SQL syntax
-    $query= "UPDATE members SET " .implode(", ", $columns). " WHERE id= ?";
-    // Prepare the query. $conn is the database connection object, prepare() is a PDO method that prepares the query
-    $stmt= $conn-> prepare($query);
-    // Bind the values to the query. The bindValues() method binds the values to the query. The first argument is the position of the value in the query, and the second argument is the value itself
-    foreach ($values as $i => $value) {
-        $paramType = is_null($value) ? PDO::PARAM_NULL : PDO::PARAM_STR;
-        $stmt->bindValue($i + 1, $value, $paramType);
-    }
-    // Bind the ID to the query. since the ID is the last value in the query, we can bind it using the count() function to get the number of values in the $values array (equal to number of columns). thus, +1 would take us to the ID position (last ? in the query)
-    $stmt->bindValue(count($values) + 1, $id, PDO::PARAM_INT);
-
-    //execute the query
-    if( $stmt->execute() ) {
-        echo json_encode(["success"=> true, "message"=> "Member updated successfully", "updated_data"=> $updateData]);
-    } else {
-        throw new Exception("Failed to update member.");
-    }
-
-}catch (Exception $e) {
-    echo json_encode(["success"=> false, "message"=> $e->getMessage()]);
-}
-
-?>

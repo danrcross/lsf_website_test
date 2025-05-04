@@ -248,6 +248,12 @@ thead {
   border-radius: 6px;
 }
 
+/* any disabled button inside #bulkToolbar will be greyed out */
+#bulkToolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 #bulkCount {
   font-weight: bold;
   font-size: 1em;

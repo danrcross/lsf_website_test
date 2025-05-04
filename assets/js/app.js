@@ -580,6 +580,9 @@ $(document).ready(function () {
     } else {
       $("#bulkToolbar").addClass("hidden");
     }
+
+    // ── NEW: disable or enable the buttons based on n ──
+    $("#bulkEditBtn, #bulkDeleteBtn").prop("disabled", n === 0);
   }
 
   /**
@@ -637,11 +640,9 @@ $(document).ready(function () {
    * and POST the non-blank values to bulk_edit.php.
    */
   function showBulkEditDialog() {
-    // 1) determine which columns are editable
     const editableCols = myQuery.columns.filter(
       (c) => c !== "id" && c !== "SAP_Level" && c !== "eSAP_Level"
     );
-    // 2) explicitly list your date columns
     const dateCols = [
       "Last_Contact",
       "SAP_Aspirant",
@@ -658,72 +659,56 @@ $(document).ready(function () {
       "eSAP_Level_5",
     ];
 
-    // 3) build the form markup
     let form = '<form id="bulkEditForm">';
     editableCols.forEach((col) => {
       form += `<div style="margin-bottom:12px">
       <label for="bulk_${col}">${col.replace(/_/g, " ")}</label><br/>`;
-
       if (col === "Deceased" || col === "Duplicate") {
-        // true/false dropdown
         form += `
         <select id="bulk_${col}" name="${col}" style="width:100%">
           <option value="">(no change)</option>
           <option value="1">True</option>
           <option value="0">False</option>
-        </select>
-      `;
+        </select>`;
       } else if (dateCols.includes(col)) {
-        // datepicker text field
         form += `
-        <input
-          type="text"
-          id="bulk_${col}"
-          name="${col}"
-          class="bulk-datepicker"
-          placeholder="YYYY-MM-DD"
-          style="width:100%;"
-        />
-      `;
+        <input type="text"
+               id="bulk_${col}"
+               name="${col}"
+               class="bulk-datepicker"
+               placeholder="YYYY-MM-DD"
+               style="width:100%;" />`;
       } else {
-        // plain text
         form += `
-        <input
-          type="text"
-          id="bulk_${col}"
-          name="${col}"
-          placeholder="(leave blank to skip)"
-          style="width:100%;"
-        />
-      `;
+        <input type="text"
+               id="bulk_${col}"
+               name="${col}"
+               placeholder="(leave blank)"
+               style="width:100%;" />`;
       }
-
       form += `</div>`;
     });
     form += `</form>`;
 
-    // 4) inject into DOM and wire up datepicker immediately
-    const $dlg = $("<div id='bulkEditDialog'>").html(form).appendTo("body"); // ensure it's in the document
+    const $dlg = $("<div>").html(form).appendTo("body");
+    $dlg.find(".bulk-datepicker").datepicker({ dateFormat: "yy-mm-dd" });
 
-    // *now* initialize all datepicker fields
-    $dlg.find(".bulk-datepicker").datepicker({
-      dateFormat: "yy-mm-dd",
-    });
-
-    // 5) turn it into a dialog
     $dlg.dialog({
       modal: true,
       title: "Bulk Edit",
       width: 600,
       buttons: {
         Save() {
-          // gather non-blank fields
+          // **Close the bulk-edit dialog right away**
+          $dlg.dialog("close");
+
+          // collect non-empty fields
           const updates = {};
-          $("#bulkEditForm")
+          $dlg
+            .find("#bulkEditForm")
             .serializeArray()
             .forEach(({ name, value }) => {
               if (!value.trim()) return;
-              // translate false dropdown to null
               if (
                 (name === "Deceased" || name === "Duplicate") &&
                 value === "0"
@@ -734,13 +719,13 @@ $(document).ready(function () {
               }
             });
           if (!Object.keys(updates).length) {
-            alert("Please enter at least one field to update.");
-            return;
+            return alert("Please enter at least one field to update.");
           }
-          // which IDs?
           const ids = $(".rowCheckbox:checked")
             .map((_, el) => $(el).data("id"))
             .get();
+
+          // send to server
           $.ajax({
             url: "queries/bulk_edit.php",
             method: "POST",
@@ -748,24 +733,37 @@ $(document).ready(function () {
             dataType: "json",
             data: JSON.stringify({ ids, updates }),
             success(resp) {
-              if (!resp.success) return alert("Error: " + resp.message);
-              // merge into memory & re-render
+              if (!resp.success) {
+                return alert("Error: " + resp.message);
+              }
+              // merge & re-render
               Object.values(paginatedData.pages).forEach((page) => {
                 page.forEach((m) => {
                   if (ids.includes(m.id)) Object.assign(m, updates);
                 });
               });
               updatePage();
+
+              // show a success dialog
+              $("<div>")
+                .html("<p>Bulk edit applied successfully!</p>")
+                .dialog({
+                  modal: true,
+                  title: "Success",
+                  buttons: {
+                    OK() {
+                      $(this).dialog("close");
+                    },
+                  },
+                });
             },
           });
-          $dlg.dialog("close");
         },
         Cancel() {
           $dlg.dialog("close");
         },
       },
       close() {
-        // clean up
         $dlg.dialog("destroy").remove();
       },
     });
@@ -985,17 +983,18 @@ $(document).ready(function () {
   });
 
   // Delete Button Event Handler
+  // Delete Button Event Handler
   $(document).on("click", ".delete-btn", function () {
-    let row = $(this).closest("tr");
-    let memberId = row.find("td:nth-child(2)").text().trim();
+    const row = $(this).closest("tr");
+    // grab the real ID cell
+    const memberId = row.find('td[data-column="id"]').text().trim();
 
     if (!memberId) {
       alert("Error: Member ID is missing.");
       return;
     }
 
-    let confirmDelete = confirm("Are you sure you want to delete this member?");
-    if (!confirmDelete) return;
+    if (!confirm("Are you sure you want to delete this member?")) return;
 
     $.ajax({
       url: "queries/delete.php",
@@ -1004,11 +1003,13 @@ $(document).ready(function () {
       dataType: "json",
       success: function (response) {
         if (response.success) {
-          console.log("Delete successful:", response.message);
+          // Remove the row from DOM...
           row.remove();
-          Object.keys(paginatedData.pages).forEach((page) => {
-            paginatedData.pages[page] = paginatedData.pages[page].filter(
-              (member) => member.id != memberId
+
+          // ...and update your in-memory data & re-render
+          Object.keys(paginatedData.pages).forEach((p) => {
+            paginatedData.pages[p] = paginatedData.pages[p].filter(
+              (m) => m.id != memberId
             );
           });
           paginatedData.totalResults--;
@@ -1017,12 +1018,10 @@ $(document).ready(function () {
           );
           updatePage();
         } else {
-          console.error("Delete failed:", response.message);
           alert("Error: " + response.message);
         }
       },
       error: function (xhr, status, error) {
-        console.error("AJAX error:", error);
         alert("Failed to delete member. Please try again.");
       },
     });
@@ -1414,4 +1413,5 @@ $(document).ready(function () {
   fetchAddMemberFields();
   addMember();
   fetchTotalMemberCount();
+  updateBulkToolbar();
 });
