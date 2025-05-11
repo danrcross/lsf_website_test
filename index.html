@@ -24,7 +24,7 @@
         <a id="login-btn" href="login.htm" target="main">Login</a>
       </header>
 
-      <div class="navbar">
+      <div class="navbar" id="navbar">
         <a href="index.html">Home</a>
         <div class="dropdown">
           <button class="dropbtn">
@@ -101,5 +101,60 @@
         <p class="footer_text">Copyright &copy; 2023 League of Silent Flight</p>
       </div>
     </div>
+    <script>
+      function updateAuthUI(data) {
+        const loginBtn = document.getElementById("login-btn");
+        const navbar = document.getElementById("navbar");
+
+        if (data.logged_in) {
+          loginBtn.textContent = "Logout";
+          loginBtn.removeAttribute("target");
+          loginBtn.href = "#";
+          loginBtn.onclick = (e) => {
+            e.preventDefault();
+            fetch("queries/logout.php")
+              .then((res) => res.json())
+              .then(() => {
+                // Reset iframe to homepage
+                document.querySelector("iframe[name='main']").src = "main.htm";
+
+                // Update UI
+                loginBtn.textContent = "Login";
+                loginBtn.href = "login.htm";
+                loginBtn.target = "main";
+                loginBtn.onclick = null;
+
+                const dashTab = document.getElementById("dashboard-tab");
+                if (dashTab) dashTab.remove();
+              });
+          };
+
+          // Add dashboard tab if not present
+          if (!document.getElementById("dashboard-tab")) {
+            const dashTab = document.createElement("a");
+            dashTab.textContent = "Dashboard";
+            dashTab.href = "/../queries/dashboard.php";
+            dashTab.target = "main";
+            dashTab.id = "dashboard-tab";
+            navbar.appendChild(dashTab);
+          }
+        } else {
+          loginBtn.textContent = "Login";
+          loginBtn.href = "login.htm";
+          loginBtn.target = "main";
+          loginBtn.onclick = null;
+
+          const dashTab = document.getElementById("dashboard-tab");
+          if (dashTab) dashTab.remove();
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", function () {
+        fetch("queries/auth_status.php")
+          .then((response) => response.json())
+          .then((data) => updateAuthUI(data))
+          .catch((err) => console.error("Auth check failed:", err));
+      });
+    </script>
   </body>
 </html>
