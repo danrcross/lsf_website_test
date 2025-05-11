@@ -102,7 +102,7 @@
       </div>
     </div>
     <script>
-      function updateAuthUI(data) {
+      window.updateAuthUI = function (data) {
         const loginBtn = document.getElementById("login-btn");
         const navbar = document.getElementById("navbar");
 
@@ -115,10 +115,8 @@
             fetch("queries/logout.php")
               .then((res) => res.json())
               .then(() => {
-                // Reset iframe to homepage
                 document.querySelector("iframe[name='main']").src = "main.htm";
 
-                // Update UI
                 loginBtn.textContent = "Login";
                 loginBtn.href = "login.htm";
                 loginBtn.target = "main";
@@ -129,11 +127,10 @@
               });
           };
 
-          // Add dashboard tab if not present
           if (!document.getElementById("dashboard-tab")) {
             const dashTab = document.createElement("a");
             dashTab.textContent = "Dashboard";
-            dashTab.href = "/../queries/dashboard.php";
+            dashTab.href = "dashboard.htm";
             dashTab.target = "main";
             dashTab.id = "dashboard-tab";
             navbar.appendChild(dashTab);
@@ -147,8 +144,9 @@
           const dashTab = document.getElementById("dashboard-tab");
           if (dashTab) dashTab.remove();
         }
-      }
+      };
 
+      // Initial auth check when page loads
       window.addEventListener("DOMContentLoaded", function () {
         fetch("queries/auth_status.php")
           .then((response) => response.json())

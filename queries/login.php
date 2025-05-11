@@ -41,6 +41,16 @@ try {
     }
 
     echo "<p style='text-align:center;'>✅ Logged in as <strong>" . htmlspecialchars($user['username']) . "</strong></p>";
+    echo "<script>
+  if (window.parent && typeof window.parent.updateAuthUI === 'function') {
+    window.parent.updateAuthUI({
+      logged_in: true,
+      username: " . json_encode($user['username']) . ",
+      role: " . json_encode($user['role']) . "
+    });
+  }
+</script>";
+
 
 } catch (Exception $e) {
     echo "<p style='color:red; text-align:center;'>" . htmlspecialchars($e->getMessage()) . "</p>";
