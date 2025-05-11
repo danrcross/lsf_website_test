@@ -27,57 +27,51 @@ The "Add New Member" tab allows for the creation of a new member entry.
 
 Navigate to [current GoDaddy hosting domain](http://kml.b15.mytemp.website/)
 
-An error may be encountered, as a result (I think) of the current SSL certificate being "self-signed". This is an issue that will be worked out soon.
-
-Here is the temporary solution:
-
-On Google Chrome: If site displays "Your connection is not private," click the "Advanced" button at the bottom of the page, scroll down, and click "Proceed... (unsafe)".
-
-The site should be accessible thereafter.
+Select the "Member Database Manager" tab on the navigation bar at the top of the page.
 
 ## Usage
 
 Below, I give a text/image-based overview of the web application.
 
-For a more detailed tutorial of usage of the application, [click this link to the video tutorial.](https://drive.google.com/file/d/1aRPZ4tEvGw10G-RteV6DArJxlBTrTnCL/view?usp=sharing)
+For a quicker overview of the application, [click this link to the video tutorial.](https://drive.google.com/file/d/1EVbvhd5h-W7AWF_we69wSMBcp1R_9raa/view?usp=drive_link)
 
 ---
 
 Here is the landing page for [http://kml.b15.mytemp.website/](http://kml.b15.mytemp.website/)
 
-![homepage](assets/screenshots/homepage.png)
+![homepage](assets/screenshots/readme-5-11/database-tab.png)
 
-User may select columns to include, search specific strings (i.e. for first name "Peter"), and limit the # of total results as well as # of items per page.
+The first thing we can see is the column selection tool. I might choose to limit which columns I want displayed in my results:
 
-The "Select All" button for the "Columns to include" section can be clicked to select/deselect all columns to return in your search.
+![col-select](assets/screenshots/readme-5-11/column-select.png)
 
-The "Filter/Search" section can be expanded like so:
+Below this section are the filter/search options. By clicking on the "LSF Number [Down Arrow]" tab, we can expand this section. The left slider selects the lower limit, and the right the upper limit. Here we are searching for members from LSF # 1248 to LSF # 4439.
 
-![exp-filter](assets/screenshots/exp-filter.png)
+![lsf-range](assets/screenshots/readme-5-11/lsf-range-select.png)
 
-At the bottom of this section is a red "Reset Filters" button, which clears all of the search fields and returns the dropdowns to the default "All".
+The checkbox must be selected in order to apply the range filter, like so.
 
-A simple search, all columns and no filters, with 100 total results and 25 results per page, will yield the following display:
+![apply-lsf-range](assets/screenshots/readme-5-11/apply-range-filt.png)
 
-![simp-search](assets/screenshots/simp-search.png)
+These sections are pretty straightforward-- you may simply type the text you are filtering for in each section.
 
-As you can see, at the top of the results is a sorting control. You may select which column to sort by, and whether to sort by ascending or descending order. Edit and delete buttons appear to the left of each entry.
+![ama-name-loc-search](assets/screenshots/readme-5-11/ama-name-loc-search.png)
 
-If you scroll down, there are pagination controls: previous, next, and a page-selector dropdown menu.
+Some dropdown menus retrieve their options from the database, such as the dropdown menu for "Country Coordinator":
 
-![pag-ctrls](assets/screenshots/pag-ctrls.png)
+![dynamic-dropdown](assets/screenshots/readme-5-11/dynamic-dropdown.png)
 
-If you click on the "Add New Member" tab at the top of the page, we are taken here:
+The remaining dropdown menus are also straightforward:
 
-![add-tab](assets/screenshots/add-tab.png)
+![remaining-dropdowns](assets/screenshots/readme-5-11/remaining-dropdowns.png)
 
-Each section can be expanded, exposing all relevant fields for a new member:
+We can search for living members by selecting "False" for "Deceased".
 
-![add-exp-1](assets/screenshots/add-exp-1.png)
-![add-exp-2](assets/screenshots/add-exp-2.png)
+Also, note the "Reset Filters" button. This simply removes any text, dropdown selection, etc. It is a fresh start for the Filter/Search section.
 
-The small calendar icons next to some of these fields, when clicked, will pop up a "datepicker" widget (a calendar) from which the correct date may be selected.
-The "Add Member" button will, of course, add the new member to the database.
+![not-deceased](assets/screenshots/readme-5-11/not-deceased.png)
+
+![search-returned](assets/screenshots/readme-5-11/search-returned.png)
 
 ## License
 
