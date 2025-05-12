@@ -71,7 +71,33 @@ Also, note the "Reset Filters" button. This simply removes any text, dropdown se
 
 ![not-deceased](assets/screenshots/readme-5-11/not-deceased.png)
 
+The "limit results" section allows you to limit the total # of results, as well as the # of results per page. By default, the "total results" is set to the current total number of members in the database.
+
+In this example, I will leave the "total results" as the default, and set the "results per page" to "50".
+![limit-results](assets/screenshots/readme-5-11/limit-results.png)
+
+After pressing the green "search" button, the page returns my results. My search-- filtering by the selected LSF # range as well as including only living members-- returned 3192 results, as we can see directly below "Results:"
+
+In this image, we can also see:
+
+- the "Download CSV" and "Download PDF" buttons, to the right,
+- below the # results returned, a "sort by" feature,
+- below the "sort by" feature, a bulk edit/delete tool,
+- at the leftmost header of the table, a "select all" checkbox,
+- in the leftmost column of each member entry, a "select" checkbox,
+- in the column to the right of the checkbox, 3 buttons: "edit", "delete", and "verify address",
+- and, of course, the results (members)
+
+I will explain these features in detail below
+
 ![search-returned](assets/screenshots/readme-5-11/search-returned.png)
+
+Pressing the "Download CSV" button will trigger a download of a CSV (spreadsheet) file containing the data produced by my search results. It can be found here, at the downloads button on my toolbar (Google Chrome)
+![csv-dld](assets/screenshots/readme-5-11/csv-dld.png)
+
+Opening the file should show a spreadsheet (in your default .csv application) that looks like this:
+
+![csv-open](assets/screenshots/readme-5-11/csv-open.png)
 
 ## License
 
