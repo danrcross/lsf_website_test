@@ -103,6 +103,117 @@ The "Download PDF" button works similarly, but should result in a PDF file that 
 
 ![pdf-open](assets/screenshots/readme-5-11/pdf-open.png)
 
+If I choose to sort by "SAP Level", "Descending" and hit the sort button, my results will sort the members of my search, showing SAP Level 5 members first.
+
+![sort-results](assets/screenshots/readme-5-11/sort-results.png)
+
+If I scroll to the bottom of the page, I have a page navigation tool. I can hit "next" or "previous" to navigate by one page at a time, or I can use the dropdown menu to jump to a specific page.
+
+![pagination](assets/screenshots/readme-5-11/pagination.png)
+
+By navigating to the last page, I can see the lowest SAP-level members among this set.
+
+![last-page](assets/screenshots/readme-5-11/last-page.png)
+
+If I click a green "Verify Address" button to the left of an entry, a query is made to Google Maps to check the validity of that member's address.
+![verify-add](assets/screenshots/readme-5-11/verify-add.png)
+
+Before demonstrating the "Edit", "Delete", "Bulk Edit", and "Bulk Delete" features, I will demonstrate the "Add New Member" tool. This way, I can create some fake members to be edited and deleted-- without being destructive to the existing database.
+
+To use the "Add New Member" tool, I will navigate to the top of the page and click on the "Add New Member" tab, under the "LSF Member Database" heading:
+
+![add-member](assets/screenshots/readme-5-11/add-member.png)
+
+The tabs on the page are collapsable for the sake of visual simplicity. I can click on the tab header to expand that section.
+
+I will start with the LSF Number tab. You can see that there is a green button that says "Use Next LSF #". This queries the database to find the lowest available LSF #.
+
+![lsf-num-open](assets/screenshots/readme-5-11/lsf-num-open.png)
+
+Currently, that number is "8330", so this appears in the text box after the button is clicked.
+
+![lsf-num-next](assets/screenshots/readme-5-11/lsf-num-next.png)
+
+For these examples, though, I will use much higher, unused numbers.
+
+These 3 tabs use simple text entry.
+
+![text-tabs](assets/screenshots/readme-5-11/text-tabs.png)
+
+Dates for SAP/eSAP acheivements can be entered using the datepicker widgets.
+
+![datepickers](assets/screenshots/readme-5-11/datepickers.png)
+
+Lastly, the "Miscellaneous" tab has a text box for miscellaneous information, and dropdown menus for "Deceased" and "Duplicate"
+
+![misc-tab](assets/screenshots/readme-5-11/misc-tab.png)
+
+When the green "Add Member" button is clicked, a dialog box will appear at the top of the page confirming the addition.
+
+![added](assets/screenshots/readme-5-11/added.png)
+
+I added three example members. Each has the zip code "99999". Let's now go back to the database where we can see an example of a false address, as well as edit and delete these members.
+
+I want to view and edit the location of these members, so I will select these columns for viewing. I assume these are the only members with the zip code "99999", so I will use this for my sole search criterion.
+
+![fake-search](assets/screenshots/readme-5-11/fake-search.png)
+
+The search successfully returned these 3 members
+
+![3-res](assets/screenshots/readme-5-11/3-res.png)
+
+When I clicked the "Verify Address" button, it returned valid. This is not a truly valid address, but I can see the address returned by Google and determine that this is not a true match, but something similar.
+
+![fake-address](assets/screenshots/readme-5-11/fake-address.png)
+
+When I click the edit button to the left of my first result, it appears like this. Some fields become editable. The blue "Cancel" button allows me to cancel the edits, and "Save" allows me to save my edits.
+
+![edit-active](assets/screenshots/readme-5-11/edit-active.png)
+
+I will change the name of the city:
+
+![edit-made](assets/screenshots/readme-5-11/edit-made.png)
+
+And hit save, which opens a confirmation dialog box:
+
+![confirm-save](assets/screenshots/readme-5-11/confirm-save.png)
+
+I can see that the edit has taken effect:
+
+![edit-done](assets/screenshots/readme-5-11/edit-done.png)
+
+Now I will hit delete for this entry, which will display a confirmation dialog box:
+
+![confirm-delete](assets/screenshots/readme-5-11/confirm-delete.png)
+
+Now it is gone, and I have clicked the checkbox in the upper left corner of the table, which selects all entries on the current page (2 entries in this case):
+
+![select-all](assets/screenshots/readme-5-11/select-all.png)
+
+We can see that above the table the Bulk tool has options for "Bulk Edit", "Bulk Delete", and "Cancel". Cancel will simply deselect all checked entries.
+
+We will click "Bulk Edit" first, which activates a form where we can enter the data we would like to change for all selected entries. I will change the name of the "Country Coordinator" to "Maestro":
+
+![bulk-edit](assets/screenshots/readme-5-11/bulk-edit.png)
+
+When I hit save, a confirmation box appears:
+
+![conf-bulk-edit](assets/screenshots/readme-5-11/conf-bulk-edit.png)
+
+I can then hit "OK", and then click the "X" at the top right of the "Bulk Edit" form to close the tool.
+
+We can now see the changes reflected on our entries-- "Maestro" is the name of their Country Coordinator:
+
+![maestro](assets/screenshots/readme-5-11/maestro.png)
+
+I can now select both entries as I did before and hit "Bulk Delete". This will bring up a confirmation dialog box. I can simply hit "Delete" to delete the 2 records.
+
+![conf-bulk-del](assets/screenshots/readme-5-11/conf-bulk-del.png)
+
+Now, after searching for the zip "99999", 0 results are returned!
+
+![no-results](assets/screenshots/readme-5-11/no-results.png)
+
 ## License
 
 This application is covered under the [MIT](https://opensource.org/licenses/MIT) license.
