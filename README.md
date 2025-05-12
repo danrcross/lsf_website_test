@@ -76,7 +76,7 @@ The "limit results" section allows you to limit the total # of results, as well 
 In this example, I will leave the "total results" as the default, and set the "results per page" to "50".
 ![limit-results](assets/screenshots/readme-5-11/limit-results.png)
 
-After pressing the green "search" button, the page returns my results. My search-- filtering by the selected LSF # range as well as including only living members-- returned 3192 results, as we can see directly below "Results:"
+After pressing the green "search" button, the page returns my results. My search-- filtering by the selected LSF # range as well as including only living members-- returned 3192 results, as we can see directly below "Results:".
 
 In this image, we can also see:
 
@@ -98,6 +98,10 @@ Pressing the "Download CSV" button will trigger a download of a CSV (spreadsheet
 Opening the file should show a spreadsheet (in your default .csv application) that looks like this:
 
 ![csv-open](assets/screenshots/readme-5-11/csv-open.png)
+
+The "Download PDF" button works similarly, but should result in a PDF file that looks like the image below. (Note that only the columns which I initially selected for my search are included in the CSV and PDF.)
+
+![pdf-open](assets/screenshots/readme-5-11/pdf-open.png)
 
 ## License
 
