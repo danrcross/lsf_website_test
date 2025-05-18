@@ -11,7 +11,7 @@ try {
     $columnGroups = [
         "LSF Number" => ["LSF_Number"],
         "AMA Number" => ["AMA_Number"],
-        "Name" => ["First_Name", "Last_Name"],
+        "Name" => ["First_Name", "Last_Name", "email"],
         "Location" => ["Address", "City", "State", "Zip", "Country", "Country_Coordinator"],
         "Miscellaneous" => ["Miscellaneous", "Deceased", "Duplicate"],
         "SAP Level" => ["SAP_Level"],
