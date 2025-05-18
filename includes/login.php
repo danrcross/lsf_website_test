@@ -1,5 +1,13 @@
 <?php
+session_set_cookie_params([
+  'lifetime' => 0,
+  'path' => '/',
+  'secure' => true,
+  'httponly' => true,
+  'samesite' => 'None'
+]);
 session_start();
+
 
 require_once __DIR__ . '/../includes/config.php';
 
@@ -14,7 +22,7 @@ $remember = isset($_POST['remember']);
 
 try {
     $stmt = $conn->prepare(
-        "SELECT id, username, email, password_hash, role
+        "SELECT id, username, email, password_hash, is_confirmed, role
          FROM users
          WHERE username = :u OR email = :u
          LIMIT 1"
@@ -26,6 +34,10 @@ try {
         throw new Exception("Invalid credentials.");
     }
 
+    if (! $user['is_confirmed']) {
+    throw new Exception("Please confirm your email address before logging in.");
+}
+
     $_SESSION['user_id']   = $user['id'];
     $_SESSION['username']  = $user['username'];
     $_SESSION['user_role'] = $user['role'];
@@ -36,7 +48,7 @@ try {
             'path'     => '/',
             'secure'   => true,
             'httponly' => true,
-            'samesite' => 'Lax',
+            'samesite' => 'None',
         ]);
     }
 

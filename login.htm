@@ -3,27 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <title>Login – League of Silent Flight</title>
-    <!-- your existing CSS + Font Awesome -->
     <link rel="stylesheet" href="site.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
   </head>
   <body>
     <div class="login-container">
-      <form action="queries/login.php" method="POST" target="main">
+      <h2>Login</h2>
+      <form id="login-form" method="POST">
         <div class="input-group">
-          <i class="fa fa-user"></i>
           <input
             type="text"
             name="username"
-            placeholder="Username or email"
+            placeholder="Username or Email"
             required
           />
         </div>
         <div class="input-group">
-          <i class="fa fa-lock"></i>
           <input
             type="password"
             name="password"
@@ -32,14 +26,26 @@
           />
         </div>
         <div class="remember-me">
-          <label>
-            <input type="checkbox" name="remember" />
-            Remember Me
-          </label>
+          <label><input type="checkbox" name="remember" /> Remember me</label>
         </div>
-        <button type="submit" class="login-btn">Log in</button>
-        <a class="forgot-link">Forgot Login?</a>
+        <button class="login-btn" type="submit">Log In</button>
       </form>
+      <p style="text-align: center">
+        <a class="forgot-link" href="register.htm" target="main"
+          >Don't have an account? Register</a
+        >
+      </p>
     </div>
+
+    <script>
+      const form = document.getElementById("login-form");
+      const host = window.location.hostname;
+
+      if (host === "localhost" || host === "127.0.0.1") {
+        form.action = "dev/login.php";
+      } else {
+        form.action = "includes/login.php";
+      }
+    </script>
   </body>
 </html>

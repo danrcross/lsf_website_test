@@ -574,23 +574,6 @@ figcaption {
   color: white;
 }
 
-/* the login button, absolutely positioned in that header */
-#login-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  font-family: Arial, Helvetica, sans-serif;
-  color: #fff;
-  padding: 6px 12px;
-  text-decoration: none;
-  font-weight: 300;
-  z-index: 10;
-}
-#login-btn:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 /* your nav bar sits right underneath the header */
 .navbar {
   background: linear-gradient(
@@ -659,4 +642,38 @@ figcaption {
 }
 .login-container .forgot-link:hover {
   text-decoration: underline;
+}
+
+#user-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-wrap: wrap; /* allow wrapping on smaller screens */
+  gap: 8px;
+  justify-content: flex-end;
+  max-width: 60%;
+  z-index: 10;
+}
+
+#user-controls a {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #fff;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-weight: 300;
+  background-color: transparent;
+  border: 1px solid white;
+  border-radius: 4px;
+  white-space: nowrap; /* prevents breaking text mid-button */
+  font-size: 14px;
+}
+
+#user-controls a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
 }
