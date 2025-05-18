@@ -221,6 +221,7 @@ li {
 }
 
 .navbar {
+  z-index: 10;
   overflow: hidden;
   background: linear-gradient(to bottom, #66ff66 0%, #009933 100%);
   font-family: Arial;
@@ -553,7 +554,6 @@ figcaption {
   );
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
-  overflow: hidden;
 }
 
 /* logo styling (optional, move that padding out of the tag) */
@@ -675,5 +675,42 @@ figcaption {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
+}
+
+#user-menu-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#user-dropdown {
+  position: absolute;
+  top: 36px; /* move below the button */
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  min-width: 160px;
+  z-index: 1000; /* make sure it's high enough */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+#user-greeting {
+  position: relative; /* ensures the dropdown is positioned correctly */
+  z-index: 1000;
+}
+
+#user-dropdown a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: black;
+  background: white;
+}
+
+#user-dropdown a:hover {
+  background-color: #f1f1f1;
 }

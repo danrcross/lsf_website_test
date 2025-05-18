@@ -110,7 +110,7 @@ $(document).ready(function () {
         const filterGroups = {
           "LSF Number": ["LSF_Number"],
           "AMA Number": ["AMA_Number"],
-          Name: ["First_Name", "Last_Name"],
+          Name: ["First_Name", "Last_Name", "email"],
           Location: [
             "Address",
             "City",
@@ -303,7 +303,7 @@ $(document).ready(function () {
           const fieldGroups = {
             "LSF Number": ["LSF_Number"],
             "AMA Number": ["AMA_Number"],
-            Name: ["First_Name", "Last_Name"],
+            Name: ["First_Name", "Last_Name", "email"],
             Location: [
               "Address",
               "City",

@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+    echo "<p style='color:red; text-align:center;'>Access denied. Admins only.</p>";
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>

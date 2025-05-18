@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard – LSF</title>
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <div id="dashboard-container">
+      <p>Loading your profile...</p>
+    </div>
+
+    <!-- jQuery first -->
+    <!-- jQuery Core -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <!-- ✅ jQuery UI (MUST come after jQuery) -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
+    />
+
+    <!-- Inline script to fetch dashboard data before loading dashboard.js -->
+    <script>
+      fetch("queries/dashboard.php")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.success) {
+            document.getElementById("dashboard-container").innerHTML =
+              "<p style='color:red; text-align:center;'>Error: " +
+              data.message +
+              "</p>";
+            return;
+          }
+
+          window.MEMBER_DATA = data.member;
+          window.IS_ADMIN = data.role === "admin";
+
+          const script = document.createElement("script");
+          script.src = "assets/js/dashboard.js";
+          document.body.appendChild(script);
+        })
+        .catch((err) => {
+          document.getElementById("dashboard-container").innerHTML =
+            "<p style='color:red; text-align:center;'>Server error. Please try again.</p>";
+        });
+    </script>
+  </body>
+</html>

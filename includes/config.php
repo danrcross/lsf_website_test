@@ -15,7 +15,7 @@ function loadEnv($path)
 }
 
 // Load .env file (path will differ depending on where the script is called from)
-loadEnv(__DIR__ . '/../../.env');
+loadEnv(__DIR__ . '/../.env');
 $servername = $_ENV['DB_HOST'];
 $username = $_ENV['DB_USER'];
 $password = $_ENV['DB_PASS'];

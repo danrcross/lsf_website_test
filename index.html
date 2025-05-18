@@ -22,30 +22,38 @@
         <img src="images/LSFLogo.png" alt="LSF Logo" class="logo" />
         <p class="title_text">League of Silent Flight</p>
         <div id="user-controls">
+          <div id="user-greeting" class="hidden">
+            <button id="user-menu-btn">
+              Welcome, <span id="user-name"></span> ▾
+            </button>
+            <div id="user-dropdown" class="hidden">
+              <a id="dashboard-link" href="dashboard.htm" target="main"
+                >Dashboard</a
+              >
+              <a id="db-link" href="dbManager.php" target="main" class="hidden"
+                >DB Manager</a
+              >
+              <a
+                id="user-manager-link"
+                href="queries/userManager.php"
+                target="main"
+                class="hidden"
+                >User Manager</a
+              >
+
+              <a href="#" id="logout-link">Logout</a>
+            </div>
+          </div>
           <a id="login-btn" href="login.htm" target="main">Login</a>
-          <a
-            id="dashboard-link"
-            href="queries/dashboard.php"
-            target="main"
-            class="user-link hidden"
-            >Dashboard</a
-          >
-          <a
-            id="db-link"
-            href="dbManager.html"
-            target="main"
-            class="user-link hidden"
-            >DB Manager</a
-          >
         </div>
       </header>
 
       <div class="navbar" id="navbar">
+        <!-- Navigation items (unchanged) -->
         <a href="index.html">Home</a>
         <div class="dropdown">
           <button class="dropbtn">
-            LSF Program
-            <i class="fa fa-caret-down"></i>
+            LSF Program <i class="fa fa-caret-down"></i>
           </button>
           <div class="dropdown-content">
             <a href="LSFIntro.htm" target="main">Introduction to the LSF</a>
@@ -56,7 +64,7 @@
               >LSF Bylaws (PDF)</a
             >
             <a href="LSFRulesIntrepretations.htm" target="main"
-              >LSF Rules Intrepretations</a
+              >LSF Rules Interpretations</a
             >
             <a href="LSFApplication.htm" target="main">LSF Application</a>
             <a href="data/LSFStory.pdf" target="_blank"
@@ -72,12 +80,10 @@
         </div>
         <div class="dropdown">
           <button class="dropbtn">
-            LSF Achievers
-            <i class="fa fa-caret-down"></i>
+            LSF Achievers <i class="fa fa-caret-down"></i>
           </button>
           <div class="dropdown-content">
             <a href="LSFLevelVs.htm" target="main">LSF Level V's</a>
-            <!-- To add a new year to tabs, simply copy a line below and change to desired date-->
             <a href="upgrades.htm?year=2025" target="main">2025 Upgrades</a>
             <a href="upgrades.htm?year=2024" target="main">2024 Upgrades</a>
             <a href="upgrades.htm?year=2023" target="main">2023 Upgrades</a>
@@ -88,7 +94,6 @@
             <a href="upgrades.htm?year=2018" target="main">2018 Upgrades</a>
             <a href="upgrades.htm?year=2017" target="main">2017 Upgrades</a>
             <a href="upgrades.htm?year=2016" target="main">2016 Upgrades</a>
-
             <a href="data/LSFMemberArchive-2Aug2017.pdf" target="_blank"
               >LSF Member Archive (PDF)</a
             >
@@ -96,8 +101,7 @@
         </div>
         <div class="dropdown">
           <button class="dropbtn">
-            LSF Events
-            <i class="fa fa-caret-down"></i>
+            LSF Events <i class="fa fa-caret-down"></i>
           </button>
           <div class="dropdown-content">
             <a href="LSFEvents.htm" target="main">2023 Nats</a>
@@ -109,60 +113,78 @@
         <a href="LSFLinks.htm" target="main">Links</a>
         <a href="LSFSilentWings.htm" target="main" id="swTab">Silent Wings</a>
       </div>
+
       <div class="container">
         <iframe class="responsive-iframe" name="main" src="main.htm"></iframe>
       </div>
       <div class="footer">
-        <p class="footer_text">Copyright &copy; 2023 League of Silent Flight</p>
+        <p class="footer_text">&copy; 2023 League of Silent Flight</p>
       </div>
     </div>
+
     <script>
-      window.updateAuthUI = function (data) {
+      function updateAuthUI(data) {
         const loginBtn = document.getElementById("login-btn");
+        const greeting = document.getElementById("user-greeting");
+        const userName = document.getElementById("user-name");
         const dashboardLink = document.getElementById("dashboard-link");
         const dbLink = document.getElementById("db-link");
+        const userManagerLink = document.getElementById("user-manager-link");
+        const logoutLink = document.getElementById("logout-link");
 
         if (data.logged_in) {
-          loginBtn.textContent = "Logout";
-          loginBtn.removeAttribute("target");
-          loginBtn.href = "#";
-          loginBtn.onclick = (e) => {
+          loginBtn.classList.add("hidden");
+          greeting.classList.remove("hidden");
+          userName.textContent = data.username;
+
+          // Always show dashboard
+          dashboardLink.classList.remove("hidden");
+
+          // Show/hide admin links based on role
+          if (data.role === "admin") {
+            dbLink.classList.remove("hidden");
+            userManagerLink.classList.remove("hidden");
+          } else {
+            dbLink.classList.add("hidden");
+            userManagerLink.classList.add("hidden");
+          }
+
+          logoutLink.onclick = (e) => {
             e.preventDefault();
             fetch("queries/logout.php")
               .then((res) => res.json())
               .then(() => {
                 document.querySelector("iframe[name='main']").src = "main.htm";
-
-                loginBtn.textContent = "Login";
-                loginBtn.href = "login.htm";
-                loginBtn.target = "main";
-                loginBtn.onclick = null;
-
-                dashboardLink.classList.add("hidden");
+                greeting.classList.add("hidden");
+                loginBtn.classList.remove("hidden");
                 dbLink.classList.add("hidden");
+                userManagerLink.classList.add("hidden");
               });
           };
-
-          dashboardLink.classList.remove("hidden");
-
-          if (data.role === "admin") {
-            dbLink.classList.remove("hidden");
-          } else {
-            dbLink.classList.add("hidden");
-          }
         } else {
-          loginBtn.textContent = "Login";
-          loginBtn.href = "login.htm";
-          loginBtn.target = "main";
-          loginBtn.onclick = null;
-
-          dashboardLink.classList.add("hidden");
+          greeting.classList.add("hidden");
+          loginBtn.classList.remove("hidden");
           dbLink.classList.add("hidden");
+          userManagerLink.classList.add("hidden");
         }
-      };
+      }
 
-      // Initial auth check when page loads
-      window.addEventListener("DOMContentLoaded", function () {
+      document.addEventListener("DOMContentLoaded", function () {
+        // Toggle dropdown visibility
+        const btn = document.getElementById("user-menu-btn");
+        const menu = document.getElementById("user-dropdown");
+
+        if (btn && menu) {
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            menu.classList.toggle("hidden");
+          });
+
+          document.addEventListener("click", function () {
+            menu.classList.add("hidden");
+          });
+        }
+
         fetch("queries/auth_status.php")
           .then((response) => response.json())
           .then((data) => updateAuthUI(data))

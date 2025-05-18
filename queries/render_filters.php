@@ -14,7 +14,7 @@ try {
         "Address" => "Address",
         "City" => "City",
         "Zip" => "Zip",
-        "Email" => "email",
+        "email" => "email",
         "AMA_Number" => "AMA_Number",
         "Miscellaneous" => "Miscellaneous",
         "State" => "State",
