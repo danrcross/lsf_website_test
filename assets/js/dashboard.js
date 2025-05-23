@@ -124,7 +124,7 @@ $(document).ready(function () {
     updates["id"] = window.MEMBER_DATA.id;
 
     $.ajax({
-      url: "queries/save_member.php",
+      url: "/queries/save_member.php",
       method: "POST",
       contentType: "application/json",
       data: JSON.stringify(updates),

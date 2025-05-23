@@ -4,10 +4,10 @@ $(document).ready(function () {
 
   $("#yearTitle").text(`${year} Upgrades`);
   $("#prevYearBtn").click(
-    () => (location.href = `upgrades.htm?year=${parseInt(year) - 1}`)
+    () => (location.href = `/pages/upgrades.htm?year=${parseInt(year) - 1}`)
   );
   $("#nextYearBtn").click(
-    () => (location.href = `upgrades.htm?year=${parseInt(year) + 1}`)
+    () => (location.href = `/pages/upgrades.htm?year=${parseInt(year) + 1}`)
   );
 
   function formatDate(dateStr) {
@@ -23,7 +23,7 @@ $(document).ready(function () {
   }
 
   $.ajax({
-    url: `queries/upgrades.php?year=${year}`,
+    url: `/queries/upgrades.php?year=${year}`,
     type: "GET",
     dataType: "json",
     success: function (response) {
