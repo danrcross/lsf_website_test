@@ -714,3 +714,42 @@ figcaption {
 #user-dropdown a:hover {
   background-color: #f1f1f1;
 }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* label | input */
+  gap: 8px 16px;
+  max-width: 800px;
+  margin: 32px auto;
+  padding: 16px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-grid label {
+  font-weight: bold;
+  align-self: center;
+  text-align: right;
+  padding-right: 8px;
+}
+
+.dashboard-grid input,
+.dashboard-grid select,
+.dashboard-grid textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.dashboard-grid > *:nth-child(4n + 1),
+.dashboard-grid > *:nth-child(4n + 2) {
+  background-color: #f9f9f9;
+}
+
+.dashboard-actions {
+  grid-column: 1 / -1;
+  text-align: right;
+  margin-top: 16px;
+}

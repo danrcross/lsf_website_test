@@ -14,7 +14,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $userId = (int)($_POST['user_id'] ?? 0);
 
-    if ($userId > 0 && $action) {
+    if ($action === 'dismiss_request') {
+        $requestId = (int)($_POST['request_id'] ?? 0);
+        if ($requestId > 0) {
+            $stmt = $conn->prepare("DELETE FROM admin_requests WHERE id = :id");
+            $stmt->execute([':id' => $requestId]);
+            $alert = "Request ID $requestId dismissed.";
+        }
+    } elseif ($userId > 0 && $action) {
         try {
             if ($action === 'delete') {
                 $stmt = $conn->prepare("DELETE FROM users WHERE id = :id");
@@ -39,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $alert = "Action error: " . htmlspecialchars($e->getMessage());
         }
     }
+
     header("Location: " . $_SERVER['PHP_SELF'] . '?' . http_build_query($_GET) . "&alert=" . urlencode($alert));
     exit;
 }
@@ -51,13 +59,13 @@ $page = max(1, (int)($_GET['page'] ?? 1));
 $limit = 10;
 $offset = ($page - 1) * $limit;
 
-$sort = $_GET['sort'] ?? 'created_at';
+$sort = $_GET['sort'] ?? 'id';
 $dir = strtolower($_GET['dir'] ?? 'desc') === 'asc' ? 'ASC' : 'DESC';
 $role = $_GET['role'] ?? '';
 $search = trim($_GET['search'] ?? '');
 
 $validSorts = ['id', 'username', 'email', 'role', 'created_at'];
-if (!in_array($sort, $validSorts)) $sort = 'created_at';
+if (!in_array($sort, $validSorts)) $sort = 'id';
 
 $where = [];
 $params = [];
@@ -85,6 +93,9 @@ $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$requestStmt = $conn->query("SELECT * FROM admin_requests ORDER BY submitted_at DESC");
+$requests = $requestStmt->fetchAll(PDO::FETCH_ASSOC);
 
 function sortLink($label, $column, $currentSort, $currentDir, $extraParams) {
     $dir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
@@ -201,6 +212,40 @@ function sortLink($label, $column, $currentSort, $currentDir, $extraParams) {
         ?>
       <?php endfor; ?>
     </div>
+
+    <?php if (!empty($requests)): ?>
+      <h2 style="margin-top: 40px;">Pending Admin Requests</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Full Name</th>
+            <th>Note</th>
+            <th>Submitted</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($requests as $req): ?>
+            <tr>
+              <td><?= $req['id'] ?></td>
+              <td><?= htmlspecialchars($req['email']) ?></td>
+              <td><?= htmlspecialchars($req['full_name'] ?? '') ?></td>
+              <td><?= nl2br(htmlspecialchars($req['note'] ?? '')) ?></td>
+              <td><?= $req['submitted_at'] ?></td>
+              <td>
+                <form method="post" class="action-form" onsubmit="return confirm('Dismiss this request?');">
+                  <input type="hidden" name="action" value="dismiss_request">
+                  <input type="hidden" name="request_id" value="<?= $req['id'] ?>">
+                  <button type="submit">Dismiss</button>
+                </form>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php endif; ?>
   </div>
 </body>
 </html>
