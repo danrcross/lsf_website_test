@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Login – League of Silent Flight</title>
-    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="/assets/css/site.css" />
   </head>
   <body>
     <div class="login-container">
@@ -31,7 +31,7 @@
         <button class="login-btn" type="submit">Log In</button>
       </form>
       <p style="text-align: center">
-        <a class="forgot-link" href="register.htm" target="main"
+        <a class="forgot-link" href="/pages/register.htm" target="main"
           >Don't have an account? Register</a
         >
       </p>
@@ -42,9 +42,9 @@
       const host = window.location.hostname;
 
       if (host === "localhost" || host === "127.0.0.1") {
-        form.action = "dev/login.php";
+        form.action = "/dev/login.php";
       } else {
-        form.action = "includes/login.php";
+        form.action = "/includes/login.php";
       }
     </script>
   </body>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Dashboard – LSF</title>
-    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="/assets/css/site.css" />
     <link
       rel="stylesheet"
       href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
@@ -51,7 +51,7 @@
         $("#dashboard-container").html(html);
       }
 
-      fetch("queries/dashboard.php")
+      fetch("/queries/dashboard.php")
         .then((res) => res.json())
         .then((data) => {
           if (
@@ -71,7 +71,7 @@
                 note: this.note.value,
               };
 
-              fetch("queries/notify_admin.php", {
+              fetch("/queries/notify_admin.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -93,7 +93,7 @@
           window.IS_ADMIN = data.role === "admin";
 
           const script = document.createElement("script");
-          script.src = "assets/js/dashboard.js";
+          script.src = "/assets/js/dashboard.js";
           document.body.appendChild(script);
         })
         .catch(() => {

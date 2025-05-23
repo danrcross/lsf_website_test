@@ -109,7 +109,7 @@ function sortLink($label, $column, $currentSort, $currentDir, $extraParams) {
 <head>
   <meta charset="UTF-8" />
   <title>User Manager – LSF</title>
-  <link rel="stylesheet" href="../site.css" />
+  <link rel="stylesheet" href="..//assets/css/site.css" />
   <style>
     table { width: 100%; border-collapse: collapse; margin-top: 24px; }
     th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
