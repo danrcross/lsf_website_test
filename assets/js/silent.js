@@ -1,6 +1,4 @@
 $(document).ready(function () {
-  console.log("swTab open");
-
   $.ajax({
     url: "/queries/silentwings.php",
     type: "GET",

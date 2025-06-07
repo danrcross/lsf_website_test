@@ -31,7 +31,9 @@
             required
           />
         </div>
-        <button class="login-btn" type="submit">Register</button>
+        <button class="login-btn" type="submit" id="register-btn">
+          Register
+        </button>
       </form>
       <p style="text-align: center">
         <a class="forgot-link" href="/pages/login.htm" target="main"
@@ -43,12 +45,18 @@
     <script>
       const form = document.getElementById("register-form");
       const host = window.location.hostname;
+      const registerBtn = document.getElementById("register-btn");
 
       if (host === "localhost" || host === "127.0.0.1") {
         form.action = "/dev/register.php";
       } else {
         form.action = "/includes/register.php";
       }
+      form.addEventListener("submit", function () {
+        registerBtn.disabled = true;
+        registerBtn.textContent = "Registering...";
+        registerBtn.classList.add("loading"); // optional CSS hook
+      });
     </script>
   </body>
 </html>

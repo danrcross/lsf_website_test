@@ -1,7 +1,8 @@
 <?php
 session_start();
+
 header("Content-Type: application/json");
-require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '../includes/config.php';
 
 try {
     if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -21,6 +22,8 @@ try {
 
     unset($input['id']); // Remove 'id' from update set
     $updateData = $input;
+
+
 
     if (empty($updateData)) {
         throw new Exception("No data provided to update.");
@@ -42,22 +45,33 @@ try {
         throw new Exception("Permission denied.");
     }
 
-    // 3) Check for duplicate LSF number if it's being changed
-    if (isset($updateData['LSF_Number']) && trim($updateData['LSF_Number']) !== '') {
-        $lsf = trim($updateData['LSF_Number']);
-        $stmt = $conn->prepare(
-            "SELECT COUNT(*) FROM members 
-             WHERE LSF_Number = :lsf 
-               AND id          != :id"
-        );
-        $stmt->execute([
-            ':lsf' => $lsf,
-            ':id'  => $memberId
-        ]);
-        if ($stmt->fetchColumn() > 0) {
-            throw new Exception("LSF Number {$lsf} is already in use by another member.");
-        }
+// Fetch current LSF_Number for this member
+$stmt = $conn->prepare("SELECT LSF_Number FROM members WHERE id = :id");
+$stmt->execute([':id' => $memberId]);
+$currentLSF = $stmt->fetchColumn();
+
+// 3) Check for duplicate LSF number if it's being changed
+if (
+    isset($updateData['LSF_Number']) &&
+    trim($updateData['LSF_Number']) !== '' &&
+    trim($updateData['LSF_Number']) !== $currentLSF
+) {
+    $lsf = trim($updateData['LSF_Number']);
+    $stmt = $conn->prepare(
+        "SELECT COUNT(*) FROM members 
+         WHERE LSF_Number = :lsf 
+           AND id          != :id"
+    );
+    $stmt->execute([
+        ':lsf' => $lsf,
+        ':id'  => $memberId
+    ]);
+    if ($stmt->fetchColumn() > 0) {
+        throw new Exception("LSF Number {$lsf} is already in use by another member.");
     }
+}
+
+
 
     // 4) Build dynamic update
     $nonEditable = ['SAP_Level', 'eSAP_Level'];

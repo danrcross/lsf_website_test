@@ -71,14 +71,15 @@ if (!empty($filter_values) && is_array($filter_values)) {
                     $params[":$key"] = $value;
                     break;
 
-                case 'Deceased':
-                case 'Duplicate':
-                    if ($value === "1") {
-                        $sql .= " AND $key = 1";
-                    } elseif ($value === "0") {
-                        $sql .= " AND ($key = 0 OR $key IS NULL)";
-                    }
-                    break;
+                    case 'Deceased':
+                        case 'Duplicate':
+                            // Accept all truthy/falsy forms from frontend
+                            if ($value === "1" || $value === 1 || $value === true || $value === "true") {
+                                $sql .= " AND $key = 1";
+                            } elseif ($value === "0" || $value === 0 || $value === false || $value === "false") {
+                                $sql .= " AND ($key = 0 OR $key IS NULL)";
+                            }
+                            break;
 
                 case 'SAP_Aspirant':
                 case 'eSAP_Aspirant':

@@ -1,8 +1,6 @@
 $(document).ready(function () {
-  console.log("swTab open");
-
   $.ajax({
-    url: "queries/SAP5s.php",
+    url: "/../../queries/SAP5s.php",
     type: "GET",
     dataType: "json", // expect JSON response
     success: function (response) {
@@ -41,7 +39,7 @@ $(document).ready(function () {
   });
 
   $.ajax({
-    url: "queries/eSAP5s.php",
+    url: "/../../queries/eSAP5s.php",
     type: "GET",
     dataType: "json", // expect JSON response
     success: function (response) {
