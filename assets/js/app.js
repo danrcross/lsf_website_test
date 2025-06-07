@@ -460,13 +460,7 @@ $(document).ready(function () {
       let key = $(this).attr("id").replace("filt-", "");
       let value = $(this).val();
 
-      if (key === "Deceased" || key === "Duplicate") {
-        if (value === "Yes") {
-          filterVals[key] = "1";
-        } else if (value === "No") {
-          filterVals[key] = "0";
-        }
-      } else if (value !== "All") {
+      if (value !== "" && value !== "All") {
         filterVals[key] = value;
       }
     });
@@ -915,12 +909,10 @@ $(document).ready(function () {
     }
   });
 
-  // Save Button Event Handler
   $(document).on("click", ".save-btn", function () {
     const rowIndex = $(this).data("index");
     const row = $(`tr[data-index="${rowIndex}"]`);
-    const editBtn = row.find(".edit-btn");
-    const memberId = row.find("td:nth-child(2)").text().trim();
+    const memberId = row.find('td[data-column="id"]').text().trim();
 
     if (!memberId) {
       alert("Error: Member ID is missing.");
@@ -928,7 +920,7 @@ $(document).ready(function () {
     }
     if (!confirm("Are you sure you want to save the changes?")) return;
 
-    // 1) Gather the updated values
+    // Gather updated values
     let rowData = {};
     row.find(".editable").each(function () {
       let cell = $(this);
@@ -936,45 +928,37 @@ $(document).ready(function () {
       let newValue;
 
       if (columnName === "Deceased" || columnName === "Duplicate") {
-        // True/False dropdown
         let sel = cell.find("select.boolean-select").val();
         newValue = sel === "1" ? 1 : null;
       } else {
-        // Text inputs
         newValue = cell.find("input").val().trim();
       }
-
       rowData[columnName] = newValue;
     });
 
-    // 2) Send to the server
+    console.log("Saving member", memberId, rowData);
+
+    // Send to the server
     $.ajax({
       url: "queries/edit.php",
       type: "POST",
       data: { data: rowData, id: memberId },
       dataType: "json",
       success: function (response) {
+        console.log("Server response:", response);
         if (!response.success) {
           alert("Error: " + response.message);
           return;
         }
 
-        // === MERGE & RE-RENDER ===
-
-        // Merge the updated fields into our in-memory data
+        // Robust: update the right member
         const pageArr = paginatedData.pages[myQuery.page];
-        const memberObj = pageArr[rowIndex];
-        Object.assign(memberObj, rowData);
+        const memberObj = pageArr.find((m) => String(m.id) === memberId);
+        if (memberObj) {
+          Object.assign(memberObj, rowData);
+        }
 
-        // Repaint the entire table from paginatedData
         updatePage();
-
-        // Optionally, reset the buttons if updatePage didn't already
-        // find the row again (since updatePage rebuilds the whole table):
-        // $(`tr[data-index="${rowIndex}"] .save-btn`).hide();
-        // $(`tr[data-index="${rowIndex}"] .edit-btn`).text("Edit");
-
-        // ==========================
       },
       error: function () {
         alert("Failed to save changes. Please try again.");

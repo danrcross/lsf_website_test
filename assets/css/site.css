@@ -350,6 +350,7 @@ li {
   padding: 10px 24px;
   cursor: pointer;
   float: left;
+  margin: 0px 5px;
 }
 
 .btn-blue button:hover {
@@ -365,6 +366,37 @@ li {
 
 .btn-blue button:not(:last-child) {
   border-right: none;
+}
+.btn-yellow button {
+  font-family: arial, helvetica, sans-serif;
+  font-size: 15px;
+  background-color: rgb(255, 214, 30);
+  color: white;
+  text-shadow: -0.75px -0.75px 0 black, 0.75px -0.75px 0 black,
+    -0.75px 0.75px 0 black, 0.75px 0.75px 0 black;
+  padding: 10px 24px;
+  cursor: pointer;
+  float: left;
+}
+
+.btn-yellow button:hover {
+  background-color: rgb(249, 224, 113);
+  color: black;
+}
+
+.btn-yellow:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.btn-yellow button:not(:last-child) {
+  border-right: none;
+}
+
+.sheet-btns {
+  display: flex;
+  flex-direction: row;
 }
 
 .btn-pblue button {
@@ -752,4 +784,15 @@ figcaption {
   grid-column: 1 / -1;
   text-align: right;
   margin-top: 16px;
+}
+
+#arch-dnld-btn {
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+button.loading {
+  opacity: 0.7;
+  cursor: wait;
 }

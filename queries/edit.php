@@ -11,15 +11,26 @@ try {
     $id         = $_POST['id']   ?? null;
     $updateData = $_POST['data'] ?? [];
 
+    file_put_contents('/tmp/edit_debug.log', date('c')." POST: ".print_r($_POST, true)."\n", FILE_APPEND);
+
+
     if (!$id) {
         throw new Exception("Valid member ID is required.");
     }
     if (empty($updateData)) {
         throw new Exception("No data provided to update.");
     }
+// Fetch existing LSF number
+$stmt = $conn->prepare("SELECT LSF_Number FROM members WHERE id = :id");
+$stmt->execute([':id' => $id]);
+$currentLSF = $stmt->fetchColumn();
 
     // 2) If LSF_Number is being changed, ensure uniqueness
-    if (isset($updateData['LSF_Number']) && trim($updateData['LSF_Number']) !== '') {
+    if (
+        isset($updateData['LSF_Number']) &&
+        trim($updateData['LSF_Number']) !== '' &&
+        trim($updateData['LSF_Number']) !== $currentLSF
+    ) {
         $lsf = trim($updateData['LSF_Number']);
         $stmt = $conn->prepare(
             "SELECT COUNT(*) FROM members 
@@ -38,6 +49,7 @@ try {
             exit;
         }
     }
+    
 
     // 3) Build dynamic UPDATE (skip computed columns)
     $nonEditable = ['SAP_Level', 'eSAP_Level'];

@@ -4,7 +4,7 @@ require_once '../includes/config.php'; // Update this path to the actual locatio
 
 try {
     // Define the query to select certain members
-    $query = "SELECT LSF_Number, First_Name, Last_Name, SAP_Level, eSAP_Level FROM members WHERE Deceased IS NOT NULL";
+    $query = "SELECT LSF_Number, First_Name, Last_Name, SAP_Level, eSAP_Level FROM members WHERE Deceased = 1";
 
     // Prepare the statement
     $stmt = $conn->prepare($query);

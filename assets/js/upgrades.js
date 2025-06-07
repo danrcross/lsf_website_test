@@ -15,8 +15,8 @@ $(document).ready(function () {
     if (d instanceof Date && !isNaN(d)) {
       return d.toLocaleDateString(undefined, {
         year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
+        month: "long", // <--- Full month name
+        day: "numeric",
       });
     }
     return "";
