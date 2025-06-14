@@ -1,25 +1,25 @@
 <?php
 session_start();
 require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/sendMail.php';
+require_once __DIR__ . '/src/sendMail.php'; // <-- make sure this file contains sendConfirmationMail()
 
-// Get and sanitize form input
+// Sanitize and validate input
 $username = trim($_POST['username'] ?? '');
 $email    = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 $confirm  = $_POST['confirm'] ?? '';
 
-// Validate input
+// Validate passwords
 if ($password !== $confirm) {
-    exit('<p style="color:red; text-align:center;">Passwords do not match.</p>');
+    exit("<p style='color:red; text-align:center;'>Passwords do not match.</p>");
 }
 
 if (strlen($password) < 6) {
-    exit('<p style="color:red; text-align:center;">Password must be at least 6 characters.</p>');
+    exit("<p style='color:red; text-align:center;'>Password must be at least 6 characters.</p>");
 }
 
 try {
-    // Check if username or email already exists
+    // Check for duplicate username or email
     $stmt = $conn->prepare("SELECT id FROM users WHERE username = :username OR email = :email");
     $stmt->execute([
         ':username' => $username,
@@ -27,14 +27,14 @@ try {
     ]);
 
     if ($stmt->fetch()) {
-        exit('<p style="color:red; text-align:center;">Username or email already taken.</p>');
+        exit("<p style='color:red; text-align:center;'>Username or email already taken.</p>");
     }
 
-    // Hash password and generate confirmation token
+    // Hash password and generate token
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     $token = bin2hex(random_bytes(32));
 
-    // Insert new user
+    // Insert user into database
     $stmt = $conn->prepare("
         INSERT INTO users (username, email, password_hash, role, confirmation_token, is_confirmed)
         VALUES (:username, :email, :password, 'user', :token, 0)
@@ -46,15 +46,15 @@ try {
         ':token'    => $token
     ]);
 
-    // Send confirmation email using SMTP
+    // Use PHPMailer to send confirmation
     $mailSent = sendConfirmationMail($email, $username, $token);
 
     if ($mailSent) {
-        echo '<p style="text-align:center;">✅ Registration successful! Please check your email to confirm your account.</p>';
+        echo "<p style='text-align:center;'>✅ Registration successful! Please check your email to confirm your account.</p>";
     } else {
-        echo '<p style="color:red; text-align:center;">❌ Registration saved, but the confirmation email could not be sent. Please contact support.</p>';
+        echo "<p style='color:red; text-align:center;'>❌ Registration saved, but the confirmation email could not be sent. Please contact support.</p>";
     }
 
 } catch (Exception $e) {
-    echo '<p style="color:red; text-align:center;">An error occurred: ' . htmlspecialchars($e->getMessage()) . '</p>';
+    echo "<p style='color:red; text-align:center;'>An error occurred: " . htmlspecialchars($e->getMessage()) . "</p>";
 }

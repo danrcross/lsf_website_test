@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reset Password – League of Silent Flight</title>
+    <link rel="stylesheet" href="/assets/css/site.css" />
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>Choose a New Password</h2>
+      <form id="reset-form" method="POST">
+        <input type="hidden" name="token" id="reset-token" />
+        <div class="input-group">
+          <input
+            type="password"
+            name="password"
+            placeholder="New Password"
+            required
+          />
+        </div>
+        <div class="input-group">
+          <input
+            type="password"
+            name="confirm"
+            placeholder="Confirm Password"
+            required
+          />
+        </div>
+        <button class="login-btn" type="submit">Update Password</button>
+      </form>
+      <p id="reset-message" style="text-align: center; font-weight: bold"></p>
+    </div>
+
+    <script src="/assets/js/reset.js"></script>
+  </body>
+</html>
