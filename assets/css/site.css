@@ -25,14 +25,6 @@ li {
   height: auto;
 }
 
-.title_text {
-  font: 48px arial, sans-serif;
-  color: white;
-  position: absolute;
-  top: 5px;
-  left: 270px;
-}
-
 .overallcontainer {
   max-width: 1100px;
 }
@@ -223,7 +215,7 @@ li {
 .navbar {
   z-index: 10;
   overflow: hidden;
-  background: linear-gradient(to bottom, #66ff66 0%, #009933 100%);
+  background: linear-gradient(to bottom, #3ef73e 0%, #009933 100%);
   font-family: Arial;
   max-width: 1100px;
 }
@@ -577,33 +569,50 @@ figcaption {
 
 /* the single header at top */
 #header-bar {
-  position: relative;
-  height: 140px;
-  background: linear-gradient(
-    to bottom,
-    #3f85bc 0%,
-    /* deep blue */ #bbd3e7 100% /* bright cyan */
-  );
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 10px 20px;
+  background: linear-gradient(to bottom, #3f85bc 0%, #bbd3e7 100%);
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
+  gap: 10px;
+  height: auto; /* let content define height */
 }
 
-/* logo styling (optional, move that padding out of the tag) */
 #header-bar .logo {
-  float: left;
-  padding: 10px;
-  height: 120px; /* or whatever keeps it vertically centered */
+  width: auto;
+  max-width: 400px;
+  flex: 0 0 auto;
 }
 
 /* page title */
 #header-bar .title_text {
-  position: absolute;
-  top: 50%;
-  left: 270px;
-  transform: translateY(-50%);
-  margin: 0;
-  font: 48px Arial, sans-serif;
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 2.5rem;
+  font-family: Arial, sans-serif;
   color: white;
+  word-break: break-word;
+  margin: 0;
+}
+
+@media screen and (max-width: 768px) {
+  #header-bar {
+    flex-direction: column;
+    height: auto;
+    padding: 16px;
+  }
+
+  #header-bar .logo {
+    max-width: 160px;
+  }
+
+  #header-bar .title_text {
+    font-size: 1.8rem;
+    margin-top: 10px;
+  }
 }
 
 /* your nav bar sits right underneath the header */
@@ -677,15 +686,12 @@ figcaption {
 }
 
 #user-controls {
-  position: absolute;
-  top: 16px;
-  right: 16px;
   display: flex;
-  flex-wrap: wrap; /* allow wrapping on smaller screens */
+  flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
-  max-width: 60%;
-  z-index: 10;
+  max-width: 300px;
+  position: static; /* Ensure it's in the flow */
 }
 
 #user-controls a {
