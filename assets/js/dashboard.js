@@ -105,6 +105,17 @@ $(document).ready(function () {
 
     function renderDashboardMember(member) {
       const isAdmin = window.IS_ADMIN;
+      if (!member || Object.keys(member).length === 0) {
+        const msg = `
+          <h3>Member Data</h3>
+          <p style="padding: 1em; background: #fff3cd; border: 1px solid #ffeeba; color: #856404;">
+            No member record was found associated with your email address. <br/>
+            Please use the <strong>Contact Admin</strong> tab to request membership or report an issue.
+          </p>`;
+        $("#member-data").html(msg);
+        return;
+      }
+
       const displayName = member.First_Name
         ? `${member.First_Name}'s`
         : "Member";

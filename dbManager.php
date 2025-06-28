@@ -100,23 +100,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
       </div>
 
       <div id="addMemberTab">
-        <h2 class="section-title">Add New Member</h2>
-        <form id="addMemberForm">
-          <label for="name">Name:</label>
-          <input type="text" id="name" required />
+  <h2 class="section-title">Add New Member</h2>
+  <form id="addMemberForm"></form>
+</div>
 
-          <label for="email">Email:</label>
-          <input type="email" id="email" required />
-
-          <label for="role">Role:</label>
-          <select id="role">
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
-
-          <button type="submit">Add Member</button>
-        </form>
-      </div>
     </div>
   </body>
 </html>

@@ -344,7 +344,7 @@ $(document).ready(function () {
                                 ${group}
                                 <span class="toggle-arrow">▼</span>
                             </legend>
-                            <div class="add-member-fields">`;
+                            <div class="add-member-fields" >`;
 
             // Loop through each field in the group
             fieldsInGroup.forEach((field) => {
