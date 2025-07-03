@@ -2,6 +2,15 @@
 header("Content-Type: application/json");
 require_once "../includes/config.php";
 
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+    http_response_code(403);
+    echo json_encode([
+        "success" => false,
+        "message" => "Access denied. Admins only."
+    ]);
+    exit;
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception("Invalid request method.");
