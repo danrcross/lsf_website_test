@@ -50,9 +50,9 @@ try {
     $mailSent = sendConfirmationMail($email, $username, $token);
 
     if ($mailSent) {
-        echo "<p style='text-align:center;'>✅ Registration successful! Please check your email to confirm your account.</p>";
+        echo "<p style='text-align:center;'>✅ Registration successful! <br><br> Please check your email to confirm your account.<br><br> If you cannot find your confirmation email, please check your spam/junk folder.<br><br> If you continue to encounter any issues, you may contact support @ <a href='mailto:webmaster@silentflight.org'>webmaster@silentflight.org</a>.</p>";
     } else {
-        echo "<p style='color:red; text-align:center;'>❌ Registration saved, but the confirmation email could not be sent. Please contact support.</p>";
+        echo "<p style='color:red; text-align:center;'>❌ Registration saved, but the confirmation email could not be sent. <br><br> Please contact support @ <a href='mailto:webmaster@silentflight.org'>webmaster@silentflight.org</a>.</p>";
     }
 
 } catch (Exception $e) {
