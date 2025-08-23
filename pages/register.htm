@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Register – League of Silent Flight</title>
-    <link rel="stylesheet" href="/assets/css/site.css" />
+    <link rel="stylesheet" href="../assets/css/site.css" />
   </head>
   <body>
     <div class="login-container">
@@ -36,7 +36,7 @@
         </button>
       </form>
       <p style="text-align: center">
-        <a class="forgot-link" href="/pages/login.htm" target="main"
+        <a class="forgot-link" href="../pages/login.htm" target="main"
           >Already have an account? Log in</a
         >
       </p>
@@ -48,9 +48,9 @@
       const registerBtn = document.getElementById("register-btn");
 
       if (host === "localhost" || host === "127.0.0.1") {
-        form.action = "/dev/register.php";
+        form.action = "../dev/register.php";
       } else {
-        form.action = "/includes/register.php";
+        form.action = "../includes/register.php";
       }
       form.addEventListener("submit", function () {
         registerBtn.disabled = true;
