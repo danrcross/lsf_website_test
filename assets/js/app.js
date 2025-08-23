@@ -1094,6 +1094,7 @@ $(document).ready(function () {
         data: JSON.stringify(formData),
         contentType: "application/json",
         dataType: "json",
+        xhrFields: { withCredentials: true },
         success: function (response) {
           if (response.success) {
             alert("Member added successfully!");
