@@ -107,11 +107,10 @@ $(document).ready(function () {
       const isAdmin = window.IS_ADMIN;
       if (!member || Object.keys(member).length === 0) {
         const msg = `
-          <h3>Member Data</h3>
-          <p style="padding: 1em; background: #fff3cd; border: 1px solid #ffeeba; color: #856404;">
-            No member record was found associated with your email address. <br/>
-            Please use the <strong>Contact Admin</strong> tab to request membership or report an issue.
-          </p>`;
+      <h3>Member Data</h3>
+      <p style="padding: 1em; background: #fff3cd; border: 1px solid #ffeeba; color: #856404;">
+        No member record was found associated with your email address.
+      </p>`;
         $("#member-data").html(msg);
         return;
       }
@@ -119,16 +118,6 @@ $(document).ready(function () {
       const displayName = member.First_Name
         ? `${member.First_Name}'s`
         : "Member";
-
-      if (!isAdmin) {
-        const msg = `
-          <h3>${displayName} Member Data</h3>
-          <p style="padding: 1em; background: #f9f9f9; border: 1px solid #ccc;">
-            To update your member information, please use the <strong>Contact Admin</strong> form.
-          </p>`;
-        $("#member-data").html(msg);
-        return;
-      }
 
       let html = `<h3>${displayName} Member Data</h3><div class="dashboard-grid">`;
 
@@ -142,21 +131,21 @@ $(document).ready(function () {
         if (editableFields.includes(key)) {
           if (["Deceased", "Duplicate"].includes(key)) {
             html += `
-              <select id="${key}" name="${key}" class="editable" data-field="${key}" disabled>
-                <option value="0" ${value == 0 ? "selected" : ""}>No</option>
-                <option value="1" ${value == 1 ? "selected" : ""}>Yes</option>
-              </select>
-            `;
+          <select id="${key}" name="${key}" class="editable" data-field="${key}" disabled>
+            <option value="0" ${value == 0 ? "selected" : ""}>No</option>
+            <option value="1" ${value == 1 ? "selected" : ""}>Yes</option>
+          </select>
+        `;
           } else {
             html += `
-              <input type="${inputType}" 
-                     id="${key}" 
-                     name="${key}" 
-                     class="editable" 
-                     data-field="${key}" 
-                     value="${value}" 
-                     disabled />
-            `;
+          <input type="${inputType}" 
+                 id="${key}" 
+                 name="${key}" 
+                 class="editable" 
+                 data-field="${key}" 
+                 value="${value}" 
+                 disabled />
+        `;
           }
         } else {
           html += `<div style="padding:8px 0">${value}</div>`;
@@ -164,15 +153,16 @@ $(document).ready(function () {
       }
 
       html += `
-        <div class="dashboard-actions">
-          <button class="edit-btn">Edit</button>
-          <button class="save-btn" style="display:none;">Save</button>
-          <button class="cancel-btn" style="display:none;">Cancel</button>
-        </div>
-      </div>`;
+    <div class="dashboard-actions">
+      <button class="edit-btn">Edit</button>
+      <button class="save-btn" style="display:none;">Save</button>
+      <button class="cancel-btn" style="display:none;">Cancel</button>
+    </div>
+  </div>`;
 
       $("#member-data").html(html);
 
+      // Optional: initialize datepickers if used
       $(".editable")
         .filter((_, el) => el.type === "date")
         .datepicker?.();

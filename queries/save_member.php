@@ -4,20 +4,26 @@ session_start();
 header("Content-Type: application/json");
 require_once __DIR__ . '/../includes/config.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode([
-        "success" => false,
-        "message" => "Access denied. Admins only."
-    ]);
-    exit;
-}
 try {
+    // 1) Check login
+    if (!isset($_SESSION['user_id'])) {
+        http_response_code(403);
+        echo json_encode([
+            "success" => false,
+            "message" => "Access denied. Please log in."
+        ]);
+        exit;
+    }
+
+    $userId   = $_SESSION['user_id'];
+    $userRole = $_SESSION['user_role'] ?? 'user';
+
+    // 2) Only POST allowed
     if ($_SERVER["REQUEST_METHOD"] !== "POST") {
         throw new Exception("Invalid request method.");
     }
 
-    // 1) Get POSTed JSON
+    // 3) Get POSTed JSON
     $input = json_decode(file_get_contents("php://input"), true);
     if (!$input || !is_array($input)) {
         throw new Exception("Invalid input data.");
@@ -27,20 +33,14 @@ try {
     if (!$memberId || !is_numeric($memberId)) {
         throw new Exception("Valid member ID is required.");
     }
-
     unset($input['id']); // Remove 'id' from update set
     $updateData = $input;
-
-
 
     if (empty($updateData)) {
         throw new Exception("No data provided to update.");
     }
 
-    // 2) Permission check
-    $userId   = $_SESSION['user_id'] ?? null;
-    $userRole = $_SESSION['user_role'] ?? 'user';
-
+    // 4) Fetch emails for permission check
     $stmt = $conn->prepare("SELECT email FROM users WHERE id = :id");
     $stmt->execute([':id' => $userId]);
     $userEmail = $stmt->fetchColumn();
@@ -49,40 +49,42 @@ try {
     $stmt->execute([':id' => $memberId]);
     $memberEmail = $stmt->fetchColumn();
 
+    if (!$memberEmail) {
+        throw new Exception("Member not found.");
+    }
+
+    // 5) Permission: admin or self
     if ($userRole !== 'admin' && strtolower($userEmail) !== strtolower($memberEmail)) {
         throw new Exception("Permission denied.");
     }
 
-// Fetch current LSF_Number for this member
-$stmt = $conn->prepare("SELECT LSF_Number FROM members WHERE id = :id");
-$stmt->execute([':id' => $memberId]);
-$currentLSF = $stmt->fetchColumn();
+    // 6) Optional: Check for duplicate LSF_Number if it's being changed
+    if (
+        isset($updateData['LSF_Number']) &&
+        trim($updateData['LSF_Number']) !== ''
+    ) {
+        $stmt = $conn->prepare("SELECT LSF_Number FROM members WHERE id = :id");
+        $stmt->execute([':id' => $memberId]);
+        $currentLSF = $stmt->fetchColumn();
 
-// 3) Check for duplicate LSF number if it's being changed
-if (
-    isset($updateData['LSF_Number']) &&
-    trim($updateData['LSF_Number']) !== '' &&
-    trim($updateData['LSF_Number']) !== $currentLSF
-) {
-    $lsf = trim($updateData['LSF_Number']);
-    $stmt = $conn->prepare(
-        "SELECT COUNT(*) FROM members 
-         WHERE LSF_Number = :lsf 
-           AND id          != :id"
-    );
-    $stmt->execute([
-        ':lsf' => $lsf,
-        ':id'  => $memberId
-    ]);
-    if ($stmt->fetchColumn() > 0) {
-        throw new Exception("LSF Number {$lsf} is already in use by another member.");
+        if (trim($updateData['LSF_Number']) !== $currentLSF) {
+            $lsf = trim($updateData['LSF_Number']);
+            $stmt = $conn->prepare(
+                "SELECT COUNT(*) FROM members 
+                 WHERE LSF_Number = :lsf AND id != :id"
+            );
+            $stmt->execute([
+                ':lsf' => $lsf,
+                ':id'  => $memberId
+            ]);
+            if ($stmt->fetchColumn() > 0) {
+                throw new Exception("LSF Number {$lsf} is already in use by another member.");
+            }
+        }
     }
-}
 
-
-
-    // 4) Build dynamic update
-    $nonEditable = ['SAP_Level', 'eSAP_Level'];
+    // 7) Build dynamic update
+    $nonEditable = ['SAP_Level', 'eSAP_Level']; // optional, can extend
     $sets = [];
     $values = [];
 
@@ -106,8 +108,14 @@ if (
 
     $stmt->execute();
 
-    echo json_encode(['success' => true, 'message' => "Member updated successfully."]);
+    echo json_encode([
+        'success' => true,
+        'message' => "Member updated successfully."
+    ]);
 
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }
