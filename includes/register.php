@@ -3,6 +3,22 @@ session_start();
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/src/sendMail.php'; // <-- make sure this file contains sendConfirmationMail()
 
+// Verify reCAPTCHA v2
+$captcha = $_POST['g-recaptcha-response'] ?? '';
+
+if (!$captcha) {
+    exit("<p style='color:red; text-align:center;'>Please complete the CAPTCHA.</p>");
+}
+
+$secretKey = '6LeoIR8sAAAAAKKnG3LDan1vCe4nTrSEvbpk6jEW';
+$response = file_get_contents(
+    "https://www.google.com/recaptcha/api/siteverify?secret={$secretKey}&response={$captcha}"
+);
+$responseData = json_decode($response);
+
+if (!$responseData->success) {
+    exit("<p style='color:red; text-align:center;'>CAPTCHA verification failed. Try again.</p>");
+}
 // Sanitize and validate input
 $username = trim($_POST['username'] ?? '');
 $email    = trim($_POST['email'] ?? '');
