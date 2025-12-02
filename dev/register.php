@@ -1,7 +1,22 @@
 <?php
 session_start();
 require_once __DIR__ . '/config.php';
+// reCAPTCHA validation
+$captcha = $_POST['g-recaptcha-response'] ?? '';
 
+if (!$captcha) {
+    exit("<p style='color:red; text-align:center;'>Please complete the CAPTCHA.</p>");
+}
+
+$secretKey = '6LcV_R4sAAAAAHeKrPTFgUiKUoMcKaeefqE7qeQt';
+$response = file_get_contents(
+    "https://www.google.com/recaptcha/api/siteverify?secret={$secretKey}&response={$captcha}"
+);
+$responseData = json_decode($response);
+
+if (!$responseData->success) {
+    exit("<p style='color:red; text-align:center;'>CAPTCHA verification failed. Try again.</p>");
+}
 // Sanitize and validate input
 $username = trim($_POST['username'] ?? '');
 $email    = trim($_POST['email'] ?? '');
