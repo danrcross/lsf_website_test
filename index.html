@@ -129,7 +129,7 @@
             LSF Events <i class="fa fa-caret-down"></i>
           </button>
           <div class="dropdown-content">
-            <a href="pages/LSFEvents.htm" target="main">2025 Nats</a>
+            <a href="pages/LSFEvents.htm" target="main">2026 Nats</a>
           </div>
         </div>
         <a href="pages/LSFNews.htm" target="main">News</a>
@@ -149,7 +149,9 @@
         ></iframe>
       </div>
       <div class="footer">
-        <p class="footer_text">&copy; 2025 League of Silent Flight</p>
+        <p class="footer_text">
+          <script>var d=new Date(); document.write("&copy; " + d.getFullYear() + " League of Silent Flight")</script>
+        </p>
       </div>
     </div>
 
@@ -205,6 +207,9 @@
         // Toggle dropdown visibility
         const btn = document.getElementById("user-menu-btn");
         const menu = document.getElementById("user-dropdown");
+        const queryString=window.location.search;
+        const urlParams=new URLSearchParams(queryString);
+        const page=urlParams.get("page");
 
         if (btn && menu) {
           btn.addEventListener("click", function (e) {
@@ -221,6 +226,13 @@
           .then((response) => response.json())
           .then((data) => updateAuthUI(data))
           .catch((err) => console.error("Auth check failed:", err));
+
+        if(page) { 
+          document.querySelector("iframe[name='main']").src = "pages/" + page;
+        }
+        else {
+          document.querySelector("iframe[name='main']").src = "pages/main.htm";
+        }
       });
     </script>
   </body>
