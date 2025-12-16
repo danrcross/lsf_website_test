@@ -64,6 +64,7 @@
             <a href="pages/LSFIntro.htm" target="main"
               >Introduction to the LSF</a
             >
+            <a href="pages/LSFMembership.htm" target="main">LSF Membership</a>
             <a href="pages/LSFTasksAndTaskSheets.htm" target="main"
               >LSF Tasks & Task Sheets</a
             >
@@ -73,7 +74,6 @@
             <a href="pages/LSFRulesIntrepretations.htm" target="main"
               >LSF Rules Interpretations</a
             >
-            <a href="pages/LSFApplication.htm" target="main">LSF Application</a>
             <a href="data/LSFStory.pdf" target="_blank"
               >How the LSF Began (PDF)</a
             >
@@ -210,7 +210,7 @@
         const queryString=window.location.search;
         const urlParams=new URLSearchParams(queryString);
         const page=urlParams.get("page");
-
+        
         if (btn && menu) {
           btn.addEventListener("click", function (e) {
             e.stopPropagation();
@@ -232,7 +232,7 @@
         }
         else {
           document.querySelector("iframe[name='main']").src = "pages/main.htm";
-        }
+        }          
       });
     </script>
   </body>
