@@ -16,6 +16,7 @@ $(document).ready(function () {
   let myQuery = {
     columns: [],
     filters: {},
+    quickFilters: {},
     limit: 10,
     sortColumn: "id",
     sortOrder: "ASC",
@@ -137,7 +138,12 @@ $(document).ready(function () {
             "eSAP_Level_5",
             "eSAP_Level",
           ],
-          Miscellaneous: ["Miscellaneous", "Deceased", "Duplicate"],
+          Miscellaneous: [
+            "Miscellaneous",
+            "Deceased",
+            "Duplicate",
+            "Bad_Email",
+          ],
         };
 
         Object.keys(filterGroups).forEach((group) => {
@@ -147,6 +153,7 @@ $(document).ready(function () {
             <legend>${group} <span class="toggle-arrow">▼</span></legend>
             <div class="filter-items">
         `;
+          let booleanHeaderAdded = false; // flag for boolean group
 
           fields.forEach((field) => {
             // 1) Range special-case for LSF_Number
@@ -179,20 +186,27 @@ $(document).ready(function () {
             const opts = filterOptions[field];
             if (!opts) return;
 
-            // 2) Deceased / Duplicate → True/False dropdown
-            if (field === "Deceased" || field === "Duplicate") {
+            // 2) Boolean checkbox filters (Deceased, Duplicate, Bad_Email)
+            if (["Deceased", "Duplicate", "Bad_Email"].includes(field)) {
+              if (!booleanHeaderAdded) {
+                html += `<div class="boolean-group">
+                        <strong>Search only for members who are:</strong><br/>`;
+                booleanHeaderAdded = true;
+              }
+
               html += `
-              <div class="filt-item">
-                <label for="filt-${field}">${field.replace(/_/g, " ")}:</label>
-                <select id="filt-${field}">
-                  <option value="">All</option>
-                  <option value="1">True</option>
-                  <option value="0">False</option>
-                </select>
-              </div>
+              <label>
+                <input type="checkbox" id="filt-${field}" value="1" />
+                ${field.replace(/_/g, " ")}
+              </label>
             `;
+
+              // close the boolean group after the last boolean field
+              if (field === "Bad_Email") {
+                html += `</div>`;
+              }
             }
-            // 3) Any other array → filter out blank/All + dedupe + render dropdown
+            // 3) Select dropdowns for array options
             else if (Array.isArray(opts)) {
               const unique = [
                 ...new Set(
@@ -291,112 +305,121 @@ $(document).ready(function () {
       type: "GET",
       dataType: "json",
       success: function (response) {
-        if (response.status === "success") {
-          let fields = response.fields;
-          let formContainer = $("#addMemberForm");
+        if (response.status !== "success") {
+          console.error("Error fetching fields:", response.message);
+          return;
+        }
 
-          formContainer.empty(); // Clear existing fields
+        let fields = response.fields;
+        let formContainer = $("#addMemberForm");
+        formContainer.empty(); // Clear existing fields
 
-          const nonEditableFields = ["id", "SAP_Level", "eSAP_Level"]; // Fields to exclude
+        const nonEditableFields = ["id", "SAP_Level", "eSAP_Level"]; // Fields to exclude
 
-          // Define field groups
-          const fieldGroups = {
-            "LSF Number": ["LSF_Number"],
-            "AMA Number": ["AMA_Number"],
-            Name: ["First_Name", "Last_Name", "email"],
-            Location: [
-              "Address",
-              "City",
-              "State",
-              "Zip",
-              "Country",
-              "Country_Coordinator",
-            ],
-            "SAP Data": [
-              "SAP_Aspirant",
-              "SAP_Level_1",
-              "SAP_Level_2",
-              "SAP_Level_3",
-              "SAP_Level_4",
-              "SAP_Level_5",
-            ],
-            "eSAP Data": [
-              "eSAP_Aspirant",
-              "eSAP_Level_1",
-              "eSAP_Level_2",
-              "eSAP_Level_3",
-              "eSAP_Level_4",
-              "eSAP_Level_5",
-            ],
-            Miscellaneous: ["Miscellaneous", "Deceased", "Duplicate"],
-          };
+        const fieldGroups = {
+          "LSF Number": ["LSF_Number"],
+          "AMA Number": ["AMA_Number"],
+          Name: ["First_Name", "Last_Name", "email"],
+          Location: [
+            "Address",
+            "City",
+            "State",
+            "Zip",
+            "Country",
+            "Country_Coordinator",
+          ],
+          "SAP Data": [
+            "SAP_Aspirant",
+            "SAP_Level_1",
+            "SAP_Level_2",
+            "SAP_Level_3",
+            "SAP_Level_4",
+            "SAP_Level_5",
+          ],
+          "eSAP Data": [
+            "eSAP_Aspirant",
+            "eSAP_Level_1",
+            "eSAP_Level_2",
+            "eSAP_Level_3",
+            "eSAP_Level_4",
+            "eSAP_Level_5",
+          ],
+          Miscellaneous: [
+            "Miscellaneous",
+            "Deceased",
+            "Duplicate",
+            "Bad_Email",
+          ],
+        };
 
-          // Loop through field groups
-          Object.keys(fieldGroups).forEach((group) => {
-            let fieldsInGroup = fieldGroups[group].filter(
-              (field) => !nonEditableFields.includes(field)
-            );
-            if (fieldsInGroup.length === 0) return; // Skip empty groups
+        Object.keys(fieldGroups).forEach((group) => {
+          let fieldsInGroup = fieldGroups[group].filter(
+            (f) => !nonEditableFields.includes(f)
+          );
+          if (!fieldsInGroup.length) return;
 
-            let fieldHtml = `
-                        <fieldset class="add-member-group">
-                            <legend>
-                                ${group}
-                                <span class="toggle-arrow">▼</span>
-                            </legend>
-                            <div class="add-member-fields" >`;
+          let fieldHtml = `<fieldset class="add-member-group">
+                          <legend>${group} <span class="toggle-arrow">▼</span></legend>
+                          <div class="add-member-fields" >`;
 
-            // Loop through each field in the group
-            fieldsInGroup.forEach((field) => {
-              let fieldData = fields.find((f) => f.name === field);
-              if (!fieldData) return;
+          // Separate boolean fields to render in one flex row
+          const booleanFields = ["Deceased", "Duplicate", "Bad_Email"];
+          const regularFields = fieldsInGroup.filter(
+            (f) => !booleanFields.includes(f)
+          );
 
-              let label = fieldData.name.replace(/_/g, " ");
-              let fieldInput = "";
+          // Regular fields
+          regularFields.forEach((field) => {
+            let fieldData = fields.find((f) => f.name === field);
+            if (!fieldData) return;
+            let label = fieldData.name.replace(/_/g, " ");
+            let fieldInput = "";
 
-              // For LSF_Number, add the "Use Next LSF #" button
-              if (fieldData.name === "LSF_Number") {
-                fieldInput = `
-                  <div class="lsf-input-wrapper">
-                    <input type="number" id="${fieldData.name}" name="${fieldData.name}">
-                    <button type="button" class="get-next-lsf-btn">Use Next LSF #</button>
-                  </div>
-                `;
-              } else if (["Deceased", "Duplicate"].includes(fieldData.name)) {
-                fieldInput = `
-                                <select id="${fieldData.name}" name="${fieldData.name}">
-                                    <option value="">Select</option>
-                                    <option value="0">No</option>
-                                    <option value="1">Yes</option>
-                                </select>`;
-              } else if (
-                fieldData.type.includes("varchar") ||
-                fieldData.type.includes("text")
-              ) {
-                fieldInput = `<input type="text" id="${fieldData.name}" name="${fieldData.name}">`;
-              } else if (fieldData.type.includes("int")) {
-                fieldInput = `<input type="number" id="${fieldData.name}" name="${fieldData.name}">`;
-              } else if (fieldData.type.includes("date")) {
-                fieldInput = `<input type="date" id="${fieldData.name}" name="${fieldData.name}">`;
-              }
+            if (fieldData.name === "LSF_Number") {
+              fieldInput = `
+              <div class="lsf-input-wrapper">
+                <input type="number" id="${fieldData.name}" name="${fieldData.name}">
+                <button type="button" class="get-next-lsf-btn">Use Next LSF #</button>
+              </div>`;
+            } else if (
+              fieldData.type.includes("varchar") ||
+              fieldData.type.includes("text")
+            ) {
+              fieldInput = `<input type="text" id="${fieldData.name}" name="${fieldData.name}">`;
+            } else if (fieldData.type.includes("int")) {
+              fieldInput = `<input type="number" id="${fieldData.name}" name="${fieldData.name}">`;
+            } else if (fieldData.type.includes("date")) {
+              fieldInput = `<input type="date" id="${fieldData.name}" name="${fieldData.name}">`;
+            }
 
-              fieldHtml += `
-                            <div class="member-field">
-                                <label for="${fieldData.name}">${label}:</label>
-                                ${fieldInput}
-                            </div>
-                        `;
-            });
-
-            fieldHtml += `</div></fieldset>`;
-            formContainer.append(fieldHtml);
+            fieldHtml += `<div class="member-field">
+                          <label for="${fieldData.name}">${label}:</label>
+                          ${fieldInput}
+                        </div>`;
           });
 
-          // Add Submit Button
-          formContainer.append('<button type="submit">Add Member</button>');
-        } else {
-          console.error("Error fetching fields:", response.message);
-        }
+          // Boolean fields in one row
+          const booleanFieldsPresent = fieldsInGroup.filter((f) =>
+            booleanFields.includes(f)
+          );
+          if (booleanFieldsPresent.length) {
+            fieldHtml += `<div class="member-field" style="display:flex; gap:12px;">`;
+            booleanFieldsPresent.forEach((field) => {
+              let label = field.replace(/_/g, " ");
+              fieldHtml += `<div style="display:flex; align-items:center; gap:6px;">
+                            <input type="checkbox" id="${field}" name="${field}">
+                            <label for="${field}">${label}</label>
+                          </div>`;
+            });
+            fieldHtml += `</div>`;
+          }
+
+          fieldHtml += `</div></fieldset>`;
+          formContainer.append(fieldHtml);
+        });
+
+        // Submit button
+        formContainer.append('<button type="submit">Add Member</button>');
       },
       error: function (xhr, status, error) {
         console.error("AJAX error:", error);
@@ -420,6 +443,11 @@ $(document).ready(function () {
     $("input[id^='filt-']").val("");
     // Reset all dropdowns in filters to "All"
     $("select[id^='filt-']").val("All");
+    $("#filt-Deceased, #filt-Duplicate, #filt-Bad_Email").prop(
+      "checked",
+      false
+    );
+
     // Uncheck the LSF Range checkbox and reset the range sliders to default values
     $("#applyLSFRange").prop("checked", false);
     let lsfMinInput = $("#rangeMin-LSF_Number");
@@ -436,8 +464,9 @@ $(document).ready(function () {
 
   function getFilterValues() {
     let filterVals = {};
-    // Special case: LSF Number
-    let exactLSF = $("#filt-LSF_Number").val().trim();
+
+    // ---- LSF Number (exact / range) ----
+    let exactLSF = $("#filt-LSF_Number").val()?.trim();
     let rangeMin = $("#rangeMin-LSF_Number").val();
     let rangeMax = $("#rangeMax-LSF_Number").val();
     let applyRange = $("#applyLSFRange").is(":checked");
@@ -445,22 +474,38 @@ $(document).ready(function () {
     if (exactLSF) {
       filterVals["LSF_Number"] = exactLSF;
     } else if (applyRange && rangeMin && rangeMax && rangeMin !== rangeMax) {
-      filterVals["LSF_Number_range"] = { min: rangeMin, max: rangeMax };
+      filterVals["LSF_Number_range"] = {
+        min: rangeMin,
+        max: rangeMax,
+      };
     }
 
+    // ---- TEXT + NUMBER INPUTS (EXCLUDE CHECKBOXES) ----
     $("input[id^='filt-']").each(function () {
-      let key = $(this).attr("id").replace("filt-", "");
-      let value = $(this).val().trim();
-      if (key !== "LSF_Number" && !filterVals[key] && value) {
+      if (this.type === "checkbox") return;
+
+      let key = this.id.replace("filt-", "");
+      let value = $(this).val()?.trim();
+
+      if (key !== "LSF_Number" && value !== "" && value !== "All") {
         filterVals[key] = value;
       }
     });
 
+    // ---- BOOLEAN CHECKBOX FILTERS ----
+    ["Deceased", "Duplicate", "Bad_Email"].forEach((field) => {
+      const el = $(`#filt-${field}`);
+      if (el.length && el.is(":checked")) {
+        filterVals[field] = true;
+      }
+    });
+
+    // ---- SELECT DROPDOWNS ----
     $("select[id^='filt-']").each(function () {
-      let key = $(this).attr("id").replace("filt-", "");
+      let key = this.id.replace("filt-", "");
       let value = $(this).val();
 
-      if (value !== "" && value !== "All") {
+      if (value && value !== "All") {
         filterVals[key] = value;
       }
     });
@@ -501,6 +546,15 @@ $(document).ready(function () {
   // Render members in a table, along with edit, save, delete, and verify buttons
   function renderMembers(members) {
     const nonEditableColumns = ["SAP_Level", "eSAP_Level"];
+    const booleanColumns = ["Deceased", "Duplicate", "Bad_Email"];
+
+    // Get all columns from the first member object
+    let columns = Object.keys(members.length ? members[0] : {});
+
+    // Ensure boolean columns are always present
+    booleanColumns.forEach((col) => {
+      if (!columns.includes(col)) columns.push(col);
+    });
 
     let output = `
     <div class="table-container">
@@ -510,8 +564,6 @@ $(document).ready(function () {
             <th><input type="checkbox" id="selectAllRows" /></th>
             <th>Actions</th>
   `;
-
-    const columns = Object.keys(members.length ? members[0] : {});
 
     // column headers
     columns.forEach((column) => {
@@ -524,7 +576,7 @@ $(document).ready(function () {
     members.forEach((member, index) => {
       output += `<tr data-index="${index}">`;
 
-      // New: per‐row checkbox
+      // Row checkbox
       output += `<td><input type="checkbox" class="rowCheckbox" data-id="${member.id}" /></td>`;
 
       // Actions
@@ -539,15 +591,16 @@ $(document).ready(function () {
 
       // Data cells
       columns.forEach((column) => {
+        let value = member[column] ?? ""; // default empty if undefined or null
+
         if (column === "id") {
-          // mark the id cell so other code can find it reliably
-          output += `<td data-column="id">${member[column]}</td>`;
+          output += `<td data-column="id">${value}</td>`;
         } else if (nonEditableColumns.includes(column)) {
-          output += `<td>${member[column] ?? ""}</td>`;
+          output += `<td>${value}</td>`;
+        } else if (booleanColumns.includes(column)) {
+          output += `<td class="editable" data-column="${column}">${value}</td>`;
         } else {
-          output += `<td class="editable" data-column="${column}">${
-            member[column] ?? ""
-          }</td>`;
+          output += `<td class="editable" data-column="${column}">${value}</td>`;
         }
       });
 
@@ -557,6 +610,7 @@ $(document).ready(function () {
     output += `</tbody></table></div>`;
     $("#results").html(output);
   }
+
   // update bulk‐toolbar visibility & count
   /**
    * Show/hide bulk-toolbar and always update the "X selected" count.
@@ -653,35 +707,35 @@ $(document).ready(function () {
       "eSAP_Level_5",
     ];
 
-    let form = '<form id="bulkEditForm">';
+    let form = `<form id="bulkEditForm" style="display:flex; flex-direction:column;">`;
+
+    // Header row
+    form += `<div style="display:flex; font-weight:bold; margin-bottom:8px; align-items:center;">
+             <div style="width:70px; text-align:center;">Apply?</div>
+             <div style="flex:1; padding-left:5px;">Field</div>
+             <div style="flex:2; padding-left:5px;">Value</div>
+           </div>`;
+
+    // Data rows
     editableCols.forEach((col) => {
-      form += `<div style="margin-bottom:12px">
-      <label for="bulk_${col}">${col.replace(/_/g, " ")}</label><br/>`;
-      if (col === "Deceased" || col === "Duplicate") {
-        form += `
-        <select id="bulk_${col}" name="${col}" style="width:100%">
-          <option value="">(no change)</option>
-          <option value="1">True</option>
-          <option value="0">False</option>
-        </select>`;
+      form += `<div style="display:flex; align-items:center; margin-bottom:6px;">
+      <div style="width:70px; text-align:center;">
+        <input type="checkbox" class="apply-checkbox" data-col="${col}" />
+      </div>
+      <div style="flex:1; padding-left:5px;">${col.replace(/_/g, " ")}</div>
+      <div style="flex:2; padding-left:5px;">`;
+
+      if (["Deceased", "Duplicate", "Bad_Email"].includes(col)) {
+        form += `<input type="checkbox" id="bulk_${col}" />`;
       } else if (dateCols.includes(col)) {
-        form += `
-        <input type="text"
-               id="bulk_${col}"
-               name="${col}"
-               class="bulk-datepicker"
-               placeholder="YYYY-MM-DD"
-               style="width:100%;" />`;
+        form += `<input type="text" id="bulk_${col}" class="bulk-datepicker" placeholder="YYYY-MM-DD" style="width:95%;" />`;
       } else {
-        form += `
-        <input type="text"
-               id="bulk_${col}"
-               name="${col}"
-               placeholder="(leave blank)"
-               style="width:100%;" />`;
+        form += `<input type="text" id="bulk_${col}" placeholder="(leave blank)" style="width:95%;" />`;
       }
-      form += `</div>`;
+
+      form += `</div></div>`;
     });
+
     form += `</form>`;
 
     const $dlg = $("<div>").html(form).appendTo("body");
@@ -690,36 +744,33 @@ $(document).ready(function () {
     $dlg.dialog({
       modal: true,
       title: "Bulk Edit",
-      width: 600,
+      width: 720,
       buttons: {
         Save() {
-          // **Close the bulk-edit dialog right away**
-          $dlg.dialog("close");
-
-          // collect non-empty fields
           const updates = {};
-          $dlg
-            .find("#bulkEditForm")
-            .serializeArray()
-            .forEach(({ name, value }) => {
-              if (!value.trim()) return;
-              if (
-                (name === "Deceased" || name === "Duplicate") &&
-                value === "0"
-              ) {
-                updates[name] = null;
-              } else {
-                updates[name] = value.trim();
-              }
-            });
+          $dlg.find(".apply-checkbox").each(function () {
+            const col = $(this).data("col");
+            if (!this.checked) return;
+
+            const $valEl = $(`#bulk_${col}`);
+            let val;
+            if (["Deceased", "Duplicate", "Bad_Email"].includes(col)) {
+              val = $valEl.is(":checked") ? 1 : 0;
+            } else {
+              val = $valEl.val().trim();
+              if (!val) return;
+            }
+            updates[col] = val;
+          });
+
           if (!Object.keys(updates).length) {
-            return alert("Please enter at least one field to update.");
+            return alert("Please check at least one field to apply.");
           }
+
           const ids = $(".rowCheckbox:checked")
             .map((_, el) => $(el).data("id"))
             .get();
 
-          // send to server
           $.ajax({
             url: "queries/bulk_edit.php",
             method: "POST",
@@ -727,18 +778,13 @@ $(document).ready(function () {
             dataType: "json",
             data: JSON.stringify({ ids, updates }),
             success(resp) {
-              if (!resp.success) {
-                return alert("Error: " + resp.message);
-              }
-              // merge & re-render
+              if (!resp.success) return alert("Error: " + resp.message);
               Object.values(paginatedData.pages).forEach((page) => {
                 page.forEach((m) => {
                   if (ids.includes(m.id)) Object.assign(m, updates);
                 });
               });
               updatePage();
-
-              // show a success dialog
               $("<div>")
                 .html("<p>Bulk edit applied successfully!</p>")
                 .dialog({
@@ -752,6 +798,8 @@ $(document).ready(function () {
                 });
             },
           });
+
+          $dlg.dialog("close");
         },
         Cancel() {
           $dlg.dialog("close");
@@ -845,6 +893,7 @@ $(document).ready(function () {
 
   // Edit Button Event Handler (with datepicker for date columns)
   $(document).on("click", ".edit-btn", function () {
+    const booleanColumns = ["Deceased", "Duplicate", "Bad_Email"];
     const dateColumns = [
       "Last_Contact",
       "SAP_Aspirant",
@@ -873,21 +922,17 @@ $(document).ready(function () {
         let column = cell.data("column");
         let text = cell.text().trim();
 
-        if (column === "Deceased" || column === "Duplicate") {
-          // boolean dropdown
+        if (booleanColumns.includes(column)) {
+          // Use checkbox for all boolean fields
           cell.html(`
-          <select class="boolean-select">
-            <option value="">False</option>
-            <option value="1" ${text === "1" ? "selected" : ""}>True</option>
-          </select>
+          <input type="checkbox" class="boolean-checkbox" ${
+            text === "1" ? "checked" : ""
+          }>
         `);
         } else if (dateColumns.includes(column)) {
           // datepicker input
           cell.html(`<input type="text" class="date-input" value="${text}">`);
-          // initialize jQuery UI datepicker
-          cell.find(".date-input").datepicker({
-            dateFormat: "yy-mm-dd",
-          });
+          cell.find(".date-input").datepicker({ dateFormat: "yy-mm-dd" });
         } else {
           // default text input
           cell.html(`<input type="text" value="${text}">`);
@@ -901,6 +946,9 @@ $(document).ready(function () {
       row.find(".editable").each(function () {
         let cell = $(this);
         let val = cell.find("input, select").val() || "";
+        if (cell.find("input.boolean-checkbox").length) {
+          val = cell.find("input.boolean-checkbox").is(":checked") ? 1 : 0;
+        }
         cell.text(val);
       });
 
@@ -927,12 +975,14 @@ $(document).ready(function () {
       let columnName = cell.data("column");
       let newValue;
 
-      if (columnName === "Deceased" || columnName === "Duplicate") {
-        let sel = cell.find("select.boolean-select").val();
-        newValue = sel === "1" ? 1 : null;
+      // Check for checkbox first
+      const checkbox = cell.find("input.boolean-checkbox");
+      if (checkbox.length) {
+        newValue = checkbox.is(":checked") ? 1 : 0; // convert to integer
       } else {
-        newValue = cell.find("input").val().trim();
+        newValue = cell.find("input, select").val().trim();
       }
+
       rowData[columnName] = newValue;
     });
 
@@ -951,7 +1001,7 @@ $(document).ready(function () {
           return;
         }
 
-        // Robust: update the right member
+        // Update the in-memory data
         const pageArr = paginatedData.pages[myQuery.page];
         const memberObj = pageArr.find((m) => String(m.id) === memberId);
         if (memberObj) {
@@ -1071,44 +1121,53 @@ $(document).ready(function () {
   });
 
   function addMember() {
-    $("#addMemberForm").submit(function (event) {
-      event.preventDefault();
+    $("#addMemberForm")
+      .off("submit")
+      .on("submit", function (event) {
+        event.preventDefault();
 
-      let formData = {};
-      $("#addMemberForm")
-        .find("input, select")
-        .each(function () {
-          let key = $(this).attr("name");
-          let value = $(this).val();
+        const formData = {};
 
-          if (value === "") value = null;
-          if (key === "Deceased" || key === "Duplicate") {
-            value = value === "1" ? 1 : 0;
-          }
-          formData[key] = value;
+        $(this)
+          .find("input, select")
+          .each(function () {
+            const key = this.name;
+            if (!key) return;
+
+            // ✅ Correct checkbox handling
+            if (this.type === "checkbox") {
+              formData[key] = this.checked ? 1 : 0;
+              return;
+            }
+
+            // Normal fields
+            let value = this.value.trim();
+            if (value !== "") {
+              formData[key] = value;
+            }
+          });
+
+        $.ajax({
+          url: "queries/add.php",
+          type: "POST",
+          data: JSON.stringify(formData),
+          contentType: "application/json",
+          dataType: "json",
+          xhrFields: { withCredentials: true },
+          success(response) {
+            if (response.success) {
+              alert("Member added successfully!");
+              $("#addMemberForm")[0].reset();
+            } else {
+              alert("Error: " + response.message);
+            }
+          },
+          error(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            alert("Failed to add member. Please try again.");
+          },
         });
-
-      $.ajax({
-        url: "queries/add.php",
-        type: "POST",
-        data: JSON.stringify(formData),
-        contentType: "application/json",
-        dataType: "json",
-        xhrFields: { withCredentials: true },
-        success: function (response) {
-          if (response.success) {
-            alert("Member added successfully!");
-            $("#addMemberForm")[0].reset();
-          } else {
-            alert("Error: " + response.message);
-          }
-        },
-        error: function (xhr, status, error) {
-          console.error("AJAX Error:", error);
-          alert("Failed to add member. Please try again.");
-        },
       });
-    });
   }
 
   function createPages(members) {
@@ -1159,27 +1218,54 @@ $(document).ready(function () {
 
     $("#pagination").html(paginationHTML);
   }
+  function renderQuickFilters() {
+    // Only create once
+    if ($("#quickFilters").length) return;
+
+    const html = `
+    <div id="quickFilters" style="display:flex; align-items:center; gap:16px; margin-bottom:10px;">
+      <strong>Quick filters:</strong>
+
+      <label style="display:flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="qf_bad_email">
+        Bad Email
+      </label>
+
+      <label style="display:flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="qf_deceased">
+        Deceased
+      </label>
+
+      <button id="applyQuickFilters">Apply</button>
+      <button id="clearQuickFilters">Clear</button>
+    </div>
+  `;
+
+    // Move quick filters **above the bulk toolbar**
+    $("#bulkToolbar").before(html);
+  }
 
   function updatePage() {
     if (!paginatedData.pages) return;
 
     let pageData = paginatedData.pages[myQuery.page] || [];
-
+    renderQuickFilters();
     renderMembers(pageData);
     renderPagination();
   }
-
-  $("#searchBtn").click(function () {
+  function runQuery() {
     updateSelectedColumns();
-    myQuery = {
-      columns: myQuery.columns,
-      filters: getFilterValues(),
-      limit: $("#limitInput").val(),
-      perPage: $("#perPageInput").val(),
-      sortColumn: "id",
-      sortOrder: "ASC",
-      page: 1,
-    };
+
+    const mainFilters = getFilterValues();
+
+    // Merge persistent quick filters (stored in myQuery.quickFilters)
+    myQuery.filters = { ...mainFilters, ...myQuery.quickFilters };
+
+    myQuery.limit = $("#limitInput").val();
+    myQuery.perPage = $("#perPageInput").val();
+    myQuery.sortColumn = $("#sort").val() || "id";
+    myQuery.sortOrder = $("#order").val() || "ASC";
+    myQuery.page = myQuery.page || 1;
 
     $.ajax({
       url: "queries/query.php",
@@ -1193,24 +1279,79 @@ $(document).ready(function () {
       },
       dataType: "json",
       success: function (response) {
-        if (response.status === "success" && response.members.length > 0) {
-          members = response.members;
-          createPages(response.members);
-          updatePage();
-          renderSort(response.members);
+        if (response.status === "success") {
+          members = response.members || [];
 
-          let countMessage = `<p class="results-count">This search returned <strong>${response.members.length}</strong> results.</p>`;
-          $("#resCount").html(countMessage);
-          $("#downloadButtons").removeClass("hidden");
+          // Pagination setup
+          createPages(members);
+
+          // Render results table + quick filters + pagination
+          updatePage();
+
+          // Render sorting options
+          renderSort(members);
+
+          // Always show the results count
+          $("#resCount").html(
+            `<p class="results-count">This search returned <strong>${members.length}</strong> results.</p>`
+          );
+
+          // Show or hide download buttons based on results
+          if (members.length > 0) {
+            $("#downloadButtons").removeClass("hidden");
+          } else {
+            $("#downloadButtons").addClass("hidden");
+            $("#results").html("<p>No results found.</p>");
+          }
+
+          console.log("Query successful:", response);
         } else {
+          // Query failed
+          members = [];
+          createPages(members);
+          updatePage();
+          $("#resCount").html(
+            `<p class="results-count">Search failed: ${response.message}</p>`
+          );
           $("#results").html("<p>No results found.</p>");
           $("#downloadButtons").addClass("hidden");
+          console.warn("Query failed:", response.message);
         }
       },
-      error: function () {
+      error: function (xhr, status, error) {
+        members = [];
+        createPages(members);
+        updatePage();
+        $("#resCount").html(
+          `<p class="results-count">Server error. Please try again.</p>`
+        );
         $("#results").html("<p>Server error. Please try again.</p>");
+        $("#downloadButtons").addClass("hidden");
+        console.error("AJAX error:", error);
       },
     });
+  }
+
+  $("#searchBtn").click(function () {
+    myQuery.page = 1; // reset to first page on a new search
+    runQuery();
+  });
+
+  $(document).on("click", "#applyQuickFilters", function () {
+    myQuery.quickFilters = {};
+    if ($("#qf_bad_email").is(":checked"))
+      myQuery.quickFilters.Bad_Email = true;
+    if ($("#qf_deceased").is(":checked")) myQuery.quickFilters.Deceased = true;
+
+    myQuery.page = 1;
+    runQuery();
+  });
+
+  $(document).on("click", "#clearQuickFilters", function () {
+    $("#qf_bad_email, #qf_deceased").prop("checked", false);
+    myQuery.quickFilters = {};
+    myQuery.page = 1;
+    runQuery();
   });
 
   $(document).on("click", "#prevPage", function () {

@@ -25,9 +25,7 @@ try {
     // 2) If they provided an LSF_Number, ensure it’s not already in use
     if (isset($data['LSF_Number']) && trim($data['LSF_Number']) !== '') {
         $lsf = trim($data['LSF_Number']);
-        $stmt = $conn->prepare(
-            "SELECT COUNT(*) FROM members WHERE LSF_Number = :lsf"
-        );
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM members WHERE LSF_Number = :lsf");
         $stmt->execute([':lsf' => $lsf]);
         if ($stmt->fetchColumn() > 0) {
             echo json_encode([
@@ -38,14 +36,23 @@ try {
         }
     }
 
-    // 3) Build dynamic INSERT (skipping id, computed columns, etc.)
+    // 3) Build dynamic INSERT
     $nonEditable = ['id', 'SAP_Level', 'eSAP_Level'];
+    $booleanFields = ['Deceased', 'Duplicate', 'Bad_Email'];
+
     $cols = $placeholders = $values = [];
     foreach ($data as $key => $val) {
         if (in_array($key, $nonEditable)) continue;
-        $cols[]         = "`$key`";
+
+        $cols[] = "`$key`";
         $placeholders[] = "?";
-        $values[]       = ($val === "" ? null : $val);
+
+        // Convert checkboxes to 1/0
+        if (in_array($key, $booleanFields, true)) {
+            $values[] = isset($val) && ($val === "on" || $val == 1) ? 1 : 0;
+        } else {
+            $values[] = ($val === "" ? null : $val);
+        }
     }
 
     if (empty($cols)) {

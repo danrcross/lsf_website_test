@@ -13,7 +13,7 @@ try {
         "AMA Number" => ["AMA_Number"],
         "Name" => ["First_Name", "Last_Name", "email"],
         "Location" => ["Address", "City", "State", "Zip", "Country", "Country_Coordinator"],
-        "Miscellaneous" => ["Miscellaneous", "Deceased", "Duplicate"],
+        "Miscellaneous" => ["Miscellaneous", "Deceased", "Duplicate", "Bad_Email"],
         "SAP Level" => ["SAP_Level"],
         "eSAP Level" => ["eSAP_Level"],
         "SAP Dates" => ["SAP_Aspirant", "SAP_Level_1", "SAP_Level_2", "SAP_Level_3", "SAP_Level_4", "SAP_Level_5"],
