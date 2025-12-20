@@ -519,7 +519,7 @@ $(document).ready(function () {
     let sortContainer = $("#sortOptions");
     sortContainer.empty();
     sortContainer.append(`
-                <label for="sort">Sort by:</label>
+                <label for="sort"><strong>Sort by:</strong></label>
                   <select id="sort">
                     ${columns
                       .map((column) => {
